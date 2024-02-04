@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "risuppu-core",
+    "risuppu-repl",
+]
+resolver = "2"
+
+[workspace.dependencies]
+gc = { version = "0.5.0", features = ["derive"] }
