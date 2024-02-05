@@ -148,7 +148,7 @@ impl Display for Sexp {
             Sexp::Lambda => write!(f, "λ"),
             Sexp::Eval => write!(f, "eval"),
             Sexp::Define => write!(f, "define"),
-            Sexp::Nil => write!(f, "nil"),
+            Sexp::Nil => write!(f, "()"),
             Sexp::I32(n) => write!(f, "{}", n),
             Sexp::Char(c) => write!(f, "'{}'", c),
             Sexp::SString(s) => write!(f, "\"{}\"", s),
