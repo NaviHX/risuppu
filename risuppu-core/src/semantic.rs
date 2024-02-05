@@ -175,7 +175,7 @@ pub fn process_print(body: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
 pub fn apply_to_lambda(arg: Ptr<Sexp>, lambda: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let lambda_token = lambda.car();
     if *lambda_token != Sexp::Lambda {
-        panic!("Apply arg(s) to Non-lambda object!: {}\n ", lambda)
+        return lambda;
     }
 
     let lambda_params = lambda.cdr().car();
@@ -210,7 +210,12 @@ pub fn apply_list_to_lambda(
         args = args.cdr();
     }
 
-    lambda
+    // Guard if no params in lambda
+    if lambda.car() == Sexp::lambda() && lambda.cdr().car().is_nil() {
+        lambda.cdr().cdr().car()
+    } else {
+        lambda
+    }
 }
 
 fn apply_body(arg: Ptr<Sexp>, param: &str, body: Ptr<Sexp>) -> Ptr<Sexp> {
@@ -303,6 +308,24 @@ mod test {
         let expr = Sexp::from_vec(vec![lambda, Sexp::int(1)]);
 
         let res = env.evaluate(expr);
+        assert_eq!(res, Sexp::int(1));
+    }
+
+    #[test]
+    fn print_and_then_test() {
+        let mut env = Env::new();
+        let and_then_expr = Sexp::from_vec(vec![Sexp::lambda(), Sexp::nil(), Sexp::int(1)]);
+        let print_expr = Sexp::from_vec(vec![Sexp::print(), Sexp::string("Print"), and_then_expr]);
+
+        let res = env.evaluate(print_expr);
+        assert_eq!(res, Sexp::int(1));
+    }
+
+    #[test]
+    fn eval_none_param_lambda() {
+        let mut env = Env::new();
+        let sexp = Sexp::from_vec(vec![Sexp::from_vec(vec![Sexp::lambda(), Sexp::nil(), Sexp::int(1)])]);
+        let res = env.evaluate(sexp);
         assert_eq!(res, Sexp::int(1));
     }
 }
