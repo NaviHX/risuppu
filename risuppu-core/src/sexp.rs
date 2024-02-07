@@ -1,6 +1,8 @@
 pub mod parse;
-use gc::{Finalize, Gc, Trace};
+use gc::{Finalize, Gc, Trace, GcCell};
 use std::fmt::Display;
+
+use crate::semantic::frame::Frame;
 
 pub type Ptr<T> = Gc<T>;
 
@@ -22,6 +24,7 @@ pub enum Sexp {
 
     // Lambda
     Lambda,
+    CapturedLambda(Gc<GcCell<Frame>>),
 
     // Evaluate
     Eval,
@@ -91,6 +94,10 @@ impl Sexp {
         matches!(self, Self::Nil)
     }
 
+    pub fn is_lambda(&self) -> bool {
+        matches!(self, Self::Lambda | Self::CapturedLambda(_))
+    }
+
     pub fn cons(l: Ptr<Self>, r: Ptr<Self>) -> Ptr<Self> {
         Ptr::new(Sexp::Form(Cons { car: l, cdr: r }))
     }
@@ -134,6 +141,10 @@ impl Sexp {
     pub fn identifier(s: impl ToString) -> Ptr<Self> {
         Sexp::wrap(Sexp::Identifier(s.to_string()))
     }
+
+    pub fn lambda_capture(frame_ptr: Gc<GcCell<Frame>>) -> Ptr<Self> {
+        Sexp::wrap(Sexp::CapturedLambda(frame_ptr))
+    }
 }
 
 impl Display for Sexp {
@@ -145,7 +156,7 @@ impl Display for Sexp {
             Sexp::Eq => write!(f, "eq"),
             Sexp::Quote => write!(f, "quote"),
             Sexp::Cons => write!(f, "cons"),
-            Sexp::Lambda => write!(f, "λ"),
+            Sexp::Lambda | Sexp::CapturedLambda(_) => write!(f, "λ"),
             Sexp::Eval => write!(f, "eval"),
             Sexp::Define => write!(f, "define"),
             Sexp::Nil => write!(f, "()"),

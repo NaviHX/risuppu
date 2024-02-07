@@ -1,24 +1,81 @@
 use std::collections::HashMap;
+use std::iter::from_fn;
+use std::ops::ControlFlow::*;
+
+pub mod frame;
+use frame::Frame;
+use gc::{Gc, GcCell};
 
 use crate::sexp::{Cons, Ptr, Sexp};
 
 pub struct Env {
-    symbol_table: HashMap<String, Ptr<Sexp>>,
+    global_table: HashMap<String, Ptr<Sexp>>,
+    stack_frame_ptr: Option<Gc<GcCell<Frame>>>,
 }
 
 impl Env {
     pub fn new() -> Self {
         Self {
-            symbol_table: HashMap::new(),
+            global_table: HashMap::new(),
+            stack_frame_ptr: None,
         }
     }
 
+    pub fn push_frame(&mut self) {
+        let new_ptr = Frame::push(self.stack_frame_ptr.take());
+        self.stack_frame_ptr = Some(new_ptr);
+    }
+
+    pub fn pop_frame(&mut self) {
+        self.stack_frame_ptr = match self.stack_frame_ptr.take() {
+            Some(ptr) => Frame::pop(ptr),
+            None => None,
+        }
+    }
+
+    pub fn top_frame(&self) -> Option<Gc<GcCell<Frame>>> {
+        self.stack_frame_ptr.clone()
+    }
+
+    pub fn set_frame_ptr(&mut self, new_frame_ptr: Option<Gc<GcCell<Frame>>>) -> Option<Gc<GcCell<Frame>>> {
+        let old_ptr = self.stack_frame_ptr.take();
+        self.stack_frame_ptr = new_frame_ptr;
+        old_ptr
+    }
+
     pub fn get(&self, identity: impl AsRef<str>) -> Option<Ptr<Sexp>> {
-        self.symbol_table.get(identity.as_ref()).cloned()
+        let identity = identity.as_ref();
+        let mut cur = self.stack_frame_ptr.clone();
+        match from_fn(|| match cur.clone() {
+            None => None,
+            Some(frame_ptr) => {
+                cur = frame_ptr.borrow().pre.clone();
+                Some(frame_ptr)
+            }
+        })
+        .try_fold(Option::<()>::None, |_, frame| {
+            match Frame::read(frame, |frame| frame.get(identity).cloned()) {
+                Some(d) => Break(Some(d.clone())),
+                None => Continue(None),
+            }
+        }) {
+            Break(p) => p,
+            Continue(_) => self.global_table.get(identity).cloned(),
+        }
     }
 
     pub fn set(&mut self, identity: impl ToString, expr: Ptr<Sexp>) {
-        self.symbol_table.insert(identity.to_string(), expr.clone());
+        if let Some(frame) = self.stack_frame_ptr.clone() {
+            Frame::modify(frame, |frame| {
+                frame.insert(identity.to_string(), expr.clone());
+            });
+        } else {
+            panic!("No stack frame!");
+        }
+    }
+
+    pub fn set_global(&mut self, identity: impl ToString, expr: Ptr<Sexp>) {
+        self.global_table.insert(identity.to_string(), expr);
     }
 
     pub fn evaluate(&mut self, expr: Ptr<Sexp>) -> Ptr<Sexp> {
@@ -33,8 +90,16 @@ impl Default for Env {
 }
 
 pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
-    loop {
+    env.push_frame();
+    let cur_top = env.top_frame();
+
+    let evaluated = loop {
         // The `break`ed val is the return val,
+
+        // If you want to inspect the sexp when debugging,
+        // uncomment the following line.
+        // let s = sexp.to_string();
+
         sexp = match sexp.as_ref() {
             Sexp::Form(list) => {
                 let car = list.car.clone();
@@ -46,7 +111,12 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     Sexp::Eq => process_eq(cdr, env),
                     Sexp::Quote => break cdr.car(),
                     Sexp::Cons => break process_cons(cdr, env),
-                    Sexp::Lambda => break sexp,
+                    Sexp::Lambda => {
+                        let current_frame_ptr = env.top_frame().expect("No stack frame!");
+                        let new_lambda = Sexp::lambda_capture(current_frame_ptr);
+                        let new_expr = Sexp::cons(new_lambda, cdr);
+                        break new_expr;
+                    }
                     Sexp::Eval => evaluate(cdr, env),
                     Sexp::Define => process_define(cdr, env),
 
@@ -64,6 +134,12 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     // Then evaluate the whole expression again.
                     Sexp::Form(list) => {
                         if list.car == Sexp::lambda() {
+                            apply_list_to_lambda(cdr, car, env)
+                        } else if let Sexp::CapturedLambda(captured_frame) = list.car.as_ref() {
+                            // Restore the captured environment.
+                            // Push a new frame to avoid modifing the captured environment.
+                            env.set_frame_ptr(Some(captured_frame.clone()));
+                            env.push_frame();
                             apply_list_to_lambda(cdr, car, env)
                         } else {
                             let new_car = evaluate(car.clone(), env);
@@ -85,7 +161,12 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 
             _ => break sexp.clone(),
         }
-    }
+    };
+
+    // Restore the stack.
+    env.set_frame_ptr(cur_top);
+    env.pop_frame();
+    evaluated
 }
 
 pub fn process_if(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
@@ -134,7 +215,7 @@ pub fn process_define(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let defination = env.evaluate(body.cdr().car());
 
     if let Sexp::Identifier(ident) = identity.as_ref() {
-        env.set(ident, defination)
+        env.set_global(ident, defination)
     }
 
     Ptr::new(Sexp::Nil)
@@ -172,74 +253,30 @@ pub fn process_print(body: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     Sexp::from_vec(vec![func])
 }
 
-pub fn apply_to_lambda(arg: Ptr<Sexp>, lambda: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+pub fn apply_list_to_lambda(mut args: Ptr<Sexp>, lambda: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let lambda_token = lambda.car();
-    if *lambda_token != Sexp::Lambda {
+    let mut lambda_params = lambda.cdr().car();
+    let lambda_body = lambda.cdr().cdr().car();
+
+    if !lambda_token.is_lambda() {
         return lambda;
     }
 
-    let lambda_params = lambda.cdr().car();
-    let lambda_body = lambda.cdr().cdr().car();
-    let lambda_arg = evaluate(arg, env);
-    let (first_param, remaining_params) = (lambda_params.car(), lambda_params.cdr());
-
-    let applied_body = if let Sexp::Identifier(ident) = first_param.as_ref() {
-        apply_body(lambda_arg, ident.as_ref(), lambda_body)
-    } else {
-        lambda_body
-    };
-
-    if remaining_params.is_nil() {
-        applied_body
-    } else {
-        Sexp::cons(
-            lambda_token,
-            Sexp::cons(remaining_params, Sexp::cons(applied_body, Sexp::nil())),
-        )
-    }
-}
-
-pub fn apply_list_to_lambda(
-    mut args: Ptr<Sexp>,
-    mut lambda: Ptr<Sexp>,
-    env: &mut Env,
-) -> Ptr<Sexp> {
     while !args.is_nil() {
-        let arg = args.car();
-        lambda = apply_to_lambda(arg, lambda, env);
-        args = args.cdr();
-    }
-
-    // Guard if no params in lambda
-    if lambda.car() == Sexp::lambda() && lambda.cdr().car().is_nil() {
-        lambda.cdr().cdr().car()
-    } else {
-        lambda
-    }
-}
-
-fn apply_body(arg: Ptr<Sexp>, param: &str, body: Ptr<Sexp>) -> Ptr<Sexp> {
-    // TODO: `apply_body` needs rewrite.
-    // Defer the substitution to eval-time.
-    // Maybe I should create a new type of Sexp called "Sub"
-    // which will substitute the param with the arg when evaluate itself.
-    if body.is_nil() {
-        return body;
-    }
-
-    match body.as_ref() {
-        Sexp::Identifier(ident) => {
-            if ident.as_str() == param {
-                arg
-            } else {
-                body
-            }
+        let (first_param, remaining_params) = (lambda_params.car(), lambda_params.cdr());
+        let (arg, remaining_args) = (args.car(), args.cdr());
+        if let Sexp::Identifier(ident) = first_param.as_ref() {
+            env.set(ident, arg.clone());
         }
-        Sexp::Form(Cons { car, cdr }) => Sexp::cons(
-            apply_body(arg.clone(), param, car.clone()),
-            apply_body(arg, param, cdr.clone()),
-        ),
-        _ => body,
+
+        lambda_params = remaining_params;
+        args = remaining_args;
+    }
+
+    if lambda_params.is_nil() {
+        lambda_body
+    } else {
+        Sexp::from_vec(vec![lambda_token, lambda_params, lambda_body])
     }
 }
 
@@ -324,8 +361,26 @@ mod test {
     #[test]
     fn eval_none_param_lambda() {
         let mut env = Env::new();
-        let sexp = Sexp::from_vec(vec![Sexp::from_vec(vec![Sexp::lambda(), Sexp::nil(), Sexp::int(1)])]);
+        let sexp = Sexp::from_vec(vec![Sexp::from_vec(vec![
+            Sexp::lambda(),
+            Sexp::nil(),
+            Sexp::int(1),
+        ])]);
         let res = env.evaluate(sexp);
+        assert_eq!(res, Sexp::int(1));
+    }
+
+    #[test]
+    fn eval_nested_lambda() {
+        let mut env = Env::new();
+        let inner_lambda = Sexp::from_vec(vec![Sexp::lambda(), Sexp::nil(), Sexp::identifier("a")]);
+        let outer_lambda = Sexp::from_vec(vec![
+            Sexp::lambda(),
+            Sexp::from_vec(vec![Sexp::identifier("a")]),
+            inner_lambda,
+        ]);
+        let expr = Sexp::from_vec(vec![Sexp::from_vec(vec![outer_lambda, Sexp::int(1)])]);
+        let res = env.evaluate(expr);
         assert_eq!(res, Sexp::int(1));
     }
 }
