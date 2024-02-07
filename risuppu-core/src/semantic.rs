@@ -246,8 +246,8 @@ pub fn process_read(body: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     Sexp::from_vec(vec![func, arg])
 }
 
-pub fn process_print(body: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
-    let content = body.car();
+pub fn process_print(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+    let content = evaluate(body.car(), env);
     let func = body.cdr().car();
     if let Sexp::SString(content) = content.as_ref() {
         println!("{}", content);
