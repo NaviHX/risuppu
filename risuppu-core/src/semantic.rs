@@ -112,7 +112,9 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     Sexp::Quote => break cdr.car(),
                     Sexp::Cons => break process_cons(cdr, env),
                     Sexp::Lambda => {
+                        // Push a new frame to avoid modifing the captured environment.
                         let current_frame_ptr = env.top_frame().expect("No stack frame!");
+                        let current_frame_ptr = Frame::push(Some(current_frame_ptr));
                         let new_lambda = Sexp::lambda_capture(current_frame_ptr);
                         let new_expr = Sexp::cons(new_lambda, cdr);
                         break new_expr;
@@ -137,7 +139,6 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                             apply_list_to_lambda(cdr, car, env)
                         } else if let Sexp::CapturedLambda(captured_frame) = list.car.as_ref() {
                             // Restore the captured environment.
-                            // Push a new frame to avoid modifing the captured environment.
                             env.set_frame_ptr(Some(captured_frame.clone()));
                             env.push_frame();
                             apply_list_to_lambda(cdr, car, env)
