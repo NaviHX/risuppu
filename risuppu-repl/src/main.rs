@@ -1,11 +1,53 @@
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+
 use risuppu::semantic::Env;
 use risuppu::sexp::parse::parse_sexp;
 
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 
+mod arg;
+use arg::Arg;
+
+use clap::Parser;
+
+fn evaluate_file(file: &Path, env: &mut Env) -> std::io::Result<()> {
+    let mut file = File::open(file)?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+
+    let mut remaining_content = content.as_str();
+    while !remaining_content.is_empty() {
+        match parse_sexp(remaining_content) {
+            Ok((unparsed, sexp)) => {
+                remaining_content = unparsed;
+                env.evaluate(sexp);
+            }
+            Err(e) => {
+                println!("{e}");
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn main() {
+    let arg: Arg = Arg::parse();
+
     let mut env = Env::new();
+    for file in arg.input_files {
+        if let Err(e) = evaluate_file(&file, &mut env) {
+            println!("Error when evaluating {}: {}", file.to_string_lossy(), e);
+        }
+    }
+
+    if !arg.interact {
+        return;
+    }
+
     let mut rl = DefaultEditor::new().expect("Cannot read line!");
 
     loop {
