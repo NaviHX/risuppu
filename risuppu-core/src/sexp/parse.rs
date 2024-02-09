@@ -101,7 +101,11 @@ fn identifier(input: &str) -> IResult<&str, Sexp> {
 fn sstring(input: &str) -> IResult<&str, Sexp> {
     map(
         delimited(tag("\""), many_till(anychar, peek(tag("\""))), tag("\"")),
-        |(res, _)| Sexp::SString(res.into_iter().collect()),
+        |(res, _)| {
+            let s: String = res.into_iter().collect();
+            let s = unescaper::unescape(&s).unwrap_or("ERROR when unescaping".to_string());
+            Sexp::SString(s)
+        },
     )(input)
 }
 

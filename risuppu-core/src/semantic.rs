@@ -240,8 +240,9 @@ pub fn process_read(body: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     let mut buf = String::new();
     f.read_line(&mut buf).unwrap();
     trim_newline(&mut buf);
+    let unescaped = unescaper::unescape(&buf).unwrap_or("ERROR when unescaping".to_string());
 
-    let arg = Ptr::new(Sexp::SString(buf));
+    let arg = Ptr::new(Sexp::SString(unescaped));
     let func = body.car();
     Sexp::from_vec(vec![func, arg])
 }
@@ -250,9 +251,9 @@ pub fn process_print(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let content = evaluate(body.car(), env);
     let func = body.cdr().car();
     if let Sexp::SString(content) = content.as_ref() {
-        println!("{}", content);
+        print!("{}", content);
     } else {
-        println!("{}", content);
+        print!("{}", content);
     }
     Sexp::from_vec(vec![func])
 }
