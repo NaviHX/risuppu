@@ -38,7 +38,7 @@ fn main() {
     let arg: Arg = Arg::parse();
 
     let mut env = Env::new();
-    for file in arg.input_files {
+    for file in arg.files {
         if let Err(e) = evaluate_file(&file, &mut env) {
             println!("Error when evaluating {}: {}", file.to_string_lossy(), e);
         }
