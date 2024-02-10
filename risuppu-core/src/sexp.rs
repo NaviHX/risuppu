@@ -25,6 +25,8 @@ pub enum Sexp {
     // Lambda
     Lambda,
     CapturedLambda(Gc<GcCell<Frame>>),
+    // Macro, a kind of special lambdas, with every param quoted
+    Macro,
 
     // Evaluate
     Eval,
@@ -157,6 +159,7 @@ impl Display for Sexp {
             Sexp::Quote => write!(f, "quote"),
             Sexp::Cons => write!(f, "cons"),
             Sexp::Lambda | Sexp::CapturedLambda(_) => write!(f, "λ"),
+            Sexp::Macro => write!(f, "macro"),
             Sexp::Eval => write!(f, "eval"),
             Sexp::Define => write!(f, "define"),
             Sexp::Nil => write!(f, "()"),
