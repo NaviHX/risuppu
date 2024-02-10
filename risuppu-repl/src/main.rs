@@ -27,6 +27,7 @@ fn evaluate_file(file: &Path, env: &mut Env) -> std::io::Result<()> {
             }
             Err(e) => {
                 println!("{e}");
+                break;
             }
         }
     }
