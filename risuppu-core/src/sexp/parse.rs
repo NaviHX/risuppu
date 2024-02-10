@@ -77,6 +77,7 @@ fn atom(input: &str) -> IResult<&str, Ptr<Sexp>> {
             parse_sexp_keyword!("quote", Sexp::Quote),
             parse_sexp_keyword!("cons", Sexp::Cons),
             parse_sexp_keyword!("lambda", Sexp::Lambda),
+            parse_sexp_keyword!("macro", Sexp::Macro),
             parse_sexp_keyword!("eval", Sexp::Eval),
             parse_sexp_keyword!("define", Sexp::Define),
             wrap_seperator!(map(preceded(tag("#\\"), anychar), Sexp::Char)),
@@ -123,6 +124,7 @@ mod test {
         assert_eq!(parse_sexp("quote").unwrap().1, Sexp::wrap(Sexp::Quote));
         assert_eq!(parse_sexp("cons").unwrap().1, Sexp::wrap(Sexp::Cons));
         assert_eq!(parse_sexp("lambda").unwrap().1, Sexp::wrap(Sexp::Lambda));
+        assert_eq!(parse_sexp("macro").unwrap().1, Sexp::wrap(Sexp::Macro));
         assert_eq!(parse_sexp("eval").unwrap().1, Sexp::wrap(Sexp::Eval));
         assert_eq!(parse_sexp("define").unwrap().1, Sexp::wrap(Sexp::Define));
     }
