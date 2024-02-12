@@ -431,4 +431,20 @@ mod test {
         env.evaluate(lambda_expr);
         assert_eq!(env.get("a").unwrap(), Sexp::int(2));
     }
+
+    #[test]
+    fn eval_rust_fn() {
+        let mut env = Env::new();
+        let mut v = 0;
+        let f = move |_| {
+            v += 1;
+            Sexp::int(v)
+        };
+        let rustfn_expr = unsafe { Sexp::rust_fn(f) };
+        let expr = Sexp::from_vec([rustfn_expr]);
+
+        assert_eq!(env.evaluate(expr.clone()), Sexp::int(1));
+        assert_eq!(env.evaluate(expr.clone()), Sexp::int(2));
+        assert_eq!(env.evaluate(expr.clone()), Sexp::int(3));
+    }
 }
