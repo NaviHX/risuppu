@@ -1,4 +1,5 @@
 pub mod parse;
+pub mod rustfn;
 use gc::{Finalize, Gc, Trace, GcCell};
 use std::fmt::Display;
 
