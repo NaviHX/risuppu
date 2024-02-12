@@ -167,7 +167,7 @@ impl Display for Sexp {
             Sexp::Char(c) => write!(f, "'{}'", c),
             Sexp::SString(s) => write!(f, "\"{}\"", s),
             Sexp::Bool(b) => write!(f, "{}", b),
-            Sexp::Identifier(ident) => write!(f, "#{}", ident),
+            Sexp::Identifier(ident) => write!(f, "{}", ident),
             Sexp::Form(cons) => {
                 write!(f, "(")?;
                 write!(f, "{}", cons)?;
