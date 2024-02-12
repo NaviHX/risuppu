@@ -100,6 +100,10 @@ impl Sexp {
         matches!(self, Self::Lambda | Self::CapturedLambda(_))
     }
 
+    pub fn is_macro(&self) -> bool {
+        matches!(self, Self::Macro)
+    }
+
     pub fn cons(l: Ptr<Self>, r: Ptr<Self>) -> Ptr<Self> {
         Ptr::new(Sexp::Form(Cons { car: l, cdr: r }))
     }
@@ -129,6 +133,7 @@ impl Sexp {
     keyword_wrapper!(eq, Sexp::Eq);
     keyword_wrapper!(quote, Sexp::Quote);
     keyword_wrapper!(lambda, Sexp::Lambda);
+    keyword_wrapper!(r#macro, Sexp::Macro);
     keyword_wrapper!(eval, Sexp::Eval);
     keyword_wrapper!(define, Sexp::Define);
 
