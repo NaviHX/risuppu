@@ -23,6 +23,8 @@ pub enum Sexp {
 
     // List, Tree
     Cons,
+    Car,
+    Cdr,
 
     // Lambda
     Lambda,
@@ -173,6 +175,8 @@ impl Display for Sexp {
             Sexp::Eq => write!(f, "eq"),
             Sexp::Quote => write!(f, "quote"),
             Sexp::Cons => write!(f, "cons"),
+            Sexp::Car => write!(f, "car"),
+            Sexp::Cdr => write!(f, "cdr"),
             Sexp::Lambda | Sexp::CapturedLambda(_) => write!(f, "λ"),
             Sexp::Macro => write!(f, "macro"),
             Sexp::RustFn(_) => write!(f, "rustfn"),
