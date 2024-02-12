@@ -4,6 +4,7 @@ use gc::{Finalize, Gc, Trace, GcCell};
 use std::fmt::Display;
 
 use crate::semantic::frame::Frame;
+use self::rustfn::RustFn;
 
 pub type Ptr<T> = Gc<T>;
 
@@ -28,6 +29,8 @@ pub enum Sexp {
     CapturedLambda(Gc<GcCell<Frame>>),
     // Macro, a kind of special lambdas, with every param quoted
     Macro,
+    // Rust function
+    RustFn(RustFn),
 
     // Evaluate
     Eval,
@@ -153,6 +156,12 @@ impl Sexp {
     pub fn lambda_capture(frame_ptr: Gc<GcCell<Frame>>) -> Ptr<Self> {
         Sexp::wrap(Sexp::CapturedLambda(frame_ptr))
     }
+
+    /// # Safety
+    /// Don't capture `Gc` value in the closure, which will escape from the gc management.
+    pub unsafe fn rust_fn(f: impl FnMut(Ptr<Sexp>) -> Ptr<Sexp> + 'static) -> Ptr<Self> {
+        Sexp::wrap(Sexp::RustFn(RustFn::new(f)))
+    }
 }
 
 impl Display for Sexp {
@@ -166,6 +175,7 @@ impl Display for Sexp {
             Sexp::Cons => write!(f, "cons"),
             Sexp::Lambda | Sexp::CapturedLambda(_) => write!(f, "λ"),
             Sexp::Macro => write!(f, "macro"),
+            Sexp::RustFn(_) => write!(f, "rustfn"),
             Sexp::Eval => write!(f, "eval"),
             Sexp::Define => write!(f, "define"),
             Sexp::Nil => write!(f, "()"),

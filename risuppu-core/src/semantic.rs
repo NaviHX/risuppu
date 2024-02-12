@@ -150,6 +150,11 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                         }
                     }
 
+                    // Apply the CDR to the Rust function.
+                    Sexp::RustFn(f) => {
+                        f.call(cdr)
+                    }
+
                     exp => {
                         println!("Error: {exp:?} is not appliable!");
                         break sexp.clone();
