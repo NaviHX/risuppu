@@ -25,6 +25,8 @@ pub enum Sexp {
     // Lambda
     Lambda,
     CapturedLambda(Gc<GcCell<Frame>>),
+    // Macro, a kind of special lambdas, with every param quoted
+    Macro,
 
     // Evaluate
     Eval,
@@ -98,6 +100,10 @@ impl Sexp {
         matches!(self, Self::Lambda | Self::CapturedLambda(_))
     }
 
+    pub fn is_macro(&self) -> bool {
+        matches!(self, Self::Macro)
+    }
+
     pub fn cons(l: Ptr<Self>, r: Ptr<Self>) -> Ptr<Self> {
         Ptr::new(Sexp::Form(Cons { car: l, cdr: r }))
     }
@@ -127,6 +133,7 @@ impl Sexp {
     keyword_wrapper!(eq, Sexp::Eq);
     keyword_wrapper!(quote, Sexp::Quote);
     keyword_wrapper!(lambda, Sexp::Lambda);
+    keyword_wrapper!(r#macro, Sexp::Macro);
     keyword_wrapper!(eval, Sexp::Eval);
     keyword_wrapper!(define, Sexp::Define);
 
@@ -157,6 +164,7 @@ impl Display for Sexp {
             Sexp::Quote => write!(f, "quote"),
             Sexp::Cons => write!(f, "cons"),
             Sexp::Lambda | Sexp::CapturedLambda(_) => write!(f, "λ"),
+            Sexp::Macro => write!(f, "macro"),
             Sexp::Eval => write!(f, "eval"),
             Sexp::Define => write!(f, "define"),
             Sexp::Nil => write!(f, "()"),
@@ -164,7 +172,7 @@ impl Display for Sexp {
             Sexp::Char(c) => write!(f, "'{}'", c),
             Sexp::SString(s) => write!(f, "\"{}\"", s),
             Sexp::Bool(b) => write!(f, "{}", b),
-            Sexp::Identifier(ident) => write!(f, "#{}", ident),
+            Sexp::Identifier(ident) => write!(f, "{}", ident),
             Sexp::Form(cons) => {
                 write!(f, "(")?;
                 write!(f, "{}", cons)?;

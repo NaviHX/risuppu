@@ -138,13 +138,12 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     // Evaluate the CAR and Replace it with the result.
                     // Then evaluate the whole expression again.
                     Sexp::Form(list) => {
-                        if list.car == Sexp::lambda() {
-                            apply_list_to_lambda(cdr, car, env)
+                        if list.car == Sexp::lambda() || list.car.is_macro() {
+                            apply_list_to(cdr, car, env)
                         } else if let Sexp::CapturedLambda(captured_frame) = list.car.as_ref() {
                             // Restore the captured environment.
                             env.set_frame_ptr(Some(captured_frame.clone()));
-                            env.push_frame();
-                            apply_list_to_lambda(cdr, car, env)
+                            apply_list_to(cdr, car, env)
                         } else {
                             let new_car = evaluate(car.clone(), env);
                             Ptr::new(Sexp::Form(Cons::new(new_car, cdr)))
@@ -258,30 +257,37 @@ pub fn process_print(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     Sexp::from_vec(vec![func])
 }
 
-pub fn apply_list_to_lambda(mut args: Ptr<Sexp>, lambda: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
-    let lambda_token = lambda.car();
-    let mut lambda_params = lambda.cdr().car();
-    let lambda_body = lambda.cdr().cdr().car();
+pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+    let first_token = expr.car();
+    let mut params = expr.cdr().car();
+    let body = expr.cdr().cdr().car();
 
-    if !lambda_token.is_lambda() {
-        return lambda;
+    if !first_token.is_lambda() && !first_token.is_macro() {
+        return expr;
     }
 
     while !args.is_nil() {
-        let (first_param, remaining_params) = (lambda_params.car(), lambda_params.cdr());
+        let (first_param, remaining_params) = (params.car(), params.cdr());
         let (arg, remaining_args) = (args.car(), args.cdr());
         if let Sexp::Identifier(ident) = first_param.as_ref() {
-            env.set(ident, arg.clone());
+            match first_token.as_ref() {
+                Sexp::Lambda | Sexp::CapturedLambda(_) => {
+                    let arg = evaluate(arg, env);
+                    env.set(ident, arg);
+                }
+                Sexp::Macro => env.set(ident, arg),
+                _ => panic!("Cannot apply to a non-lambda expr!"),
+            }
         }
 
-        lambda_params = remaining_params;
+        params = remaining_params;
         args = remaining_args;
     }
 
-    if lambda_params.is_nil() {
-        lambda_body
+    if params.is_nil() {
+        body
     } else {
-        Sexp::from_vec(vec![lambda_token, lambda_params, lambda_body])
+        Sexp::from_vec(vec![first_token, params, body])
     }
 }
 
@@ -387,5 +393,37 @@ mod test {
         let expr = Sexp::from_vec(vec![Sexp::from_vec(vec![outer_lambda, Sexp::int(1)])]);
         let res = env.evaluate(expr);
         assert_eq!(res, Sexp::int(1));
+    }
+
+    #[test]
+    fn eval_macro() {
+        let mut env = Env::new();
+        let lambda = Sexp::from_vec(vec![
+            Sexp::r#macro(),
+            Sexp::from_vec(vec![Sexp::identifier("a")]),
+            Sexp::identifier("a"),
+        ]);
+        let expr = Sexp::from_vec(vec![lambda, Sexp::int(1)]);
+
+        let res = env.evaluate(expr);
+        assert_eq!(res, Sexp::int(1));
+    }
+
+    #[test]
+    fn test_macro_quoted_arg() {
+        let mut env = Env::new();
+        env.set_global(Sexp::identifier("a"), Sexp::int(1));
+        assert_eq!(env.get("a").unwrap(), Sexp::int(1));
+
+        let arg = Sexp::from_vec([Sexp::define(), Sexp::identifier("a"), Sexp::int(2)]);
+        // ((macro (b)) (define a 2))
+        let macro_expr = Sexp::from_vec([Sexp::from_vec([Sexp::r#macro(), Sexp::from_vec([Sexp::identifier("b")])]), arg.clone()]);
+        // ((lambda (b)) (define a 2))
+        let lambda_expr = Sexp::from_vec([Sexp::from_vec([Sexp::lambda(), Sexp::from_vec([Sexp::identifier("b")])]), arg.clone()]);
+
+        env.evaluate(macro_expr);
+        assert_eq!(env.get("a").unwrap(), Sexp::int(1));
+        env.evaluate(lambda_expr);
+        assert_eq!(env.get("a").unwrap(), Sexp::int(2));
     }
 }
