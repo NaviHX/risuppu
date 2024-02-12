@@ -143,7 +143,6 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                         } else if let Sexp::CapturedLambda(captured_frame) = list.car.as_ref() {
                             // Restore the captured environment.
                             env.set_frame_ptr(Some(captured_frame.clone()));
-                            env.push_frame();
                             apply_list_to(cdr, car, env)
                         } else {
                             let new_car = evaluate(car.clone(), env);
