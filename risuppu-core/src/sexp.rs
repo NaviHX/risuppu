@@ -138,6 +138,8 @@ impl Sexp {
     keyword_wrapper!(r#if, Sexp::If);
     keyword_wrapper!(eq, Sexp::Eq);
     keyword_wrapper!(quote, Sexp::Quote);
+    keyword_wrapper!(car_token, Sexp::Car);
+    keyword_wrapper!(cdr_token, Sexp::Cdr);
     keyword_wrapper!(lambda, Sexp::Lambda);
     keyword_wrapper!(r#macro, Sexp::Macro);
     keyword_wrapper!(eval, Sexp::Eval);

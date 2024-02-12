@@ -114,6 +114,8 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     Sexp::Eq => process_eq(cdr, env),
                     Sexp::Quote => break cdr.car(),
                     Sexp::Cons => break process_cons(cdr, env),
+                    Sexp::Car => break process_car(cdr, env),
+                    Sexp::Cdr => break process_cdr(cdr, env),
                     Sexp::Lambda => {
                         // Push a new frame to avoid modifing the captured environment.
                         let current_frame_ptr = env.top_frame().expect("No stack frame!");
@@ -175,6 +177,18 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     env.set_frame_ptr(cur_top);
     env.pop_frame();
     evaluated
+}
+
+fn process_car(body: Gc<Sexp>, env: &mut Env) -> Gc<Sexp> {
+    let arg = body.car();
+    let arg = env.evaluate(arg);
+    arg.car()
+}
+
+fn process_cdr(body: Gc<Sexp>, env: &mut Env) -> Gc<Sexp> {
+    let arg = body.car();
+    let arg = env.evaluate(arg);
+    arg.cdr()
 }
 
 pub fn process_if(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
@@ -446,5 +460,16 @@ mod test {
         assert_eq!(env.evaluate(expr.clone()), Sexp::int(1));
         assert_eq!(env.evaluate(expr.clone()), Sexp::int(2));
         assert_eq!(env.evaluate(expr.clone()), Sexp::int(3));
+    }
+
+    #[test]
+    fn eval_car_and_cdr() {
+        let mut env = Env::new();
+        let list = Sexp::from_vec([Sexp::int(1), Sexp::int(2)]);
+        let car_expr = Sexp::from_vec([Sexp::car_token(), list.clone()]);
+        let cdr_expr = Sexp::from_vec([Sexp::cdr_token(), list.clone()]);
+
+        assert_eq!(env.evaluate(car_expr), Sexp::int(1));
+        assert_eq!(env.evaluate(cdr_expr), Sexp::from_vec([Sexp::int(2)]));
     }
 }
