@@ -1,96 +1,9 @@
-use std::collections::HashMap;
-use std::iter::from_fn;
-use std::ops::ControlFlow::*;
-
 pub mod frame;
+pub mod env;
 use frame::Frame;
-use gc::{Gc, GcCell};
+pub use env::Env;
 
 use crate::sexp::{Cons, Ptr, Sexp};
-
-pub struct Env {
-    global_table: HashMap<String, Ptr<Sexp>>,
-    stack_frame_ptr: Option<Gc<GcCell<Frame>>>,
-}
-
-impl Env {
-    pub fn new() -> Self {
-        Self {
-            global_table: HashMap::new(),
-            stack_frame_ptr: None,
-        }
-    }
-
-    pub fn push_frame(&mut self) {
-        let new_ptr = Frame::push(self.stack_frame_ptr.take());
-        self.stack_frame_ptr = Some(new_ptr);
-    }
-
-    pub fn pop_frame(&mut self) {
-        self.stack_frame_ptr = match self.stack_frame_ptr.take() {
-            Some(ptr) => Frame::pop(ptr),
-            None => None,
-        }
-    }
-
-    pub fn top_frame(&self) -> Option<Gc<GcCell<Frame>>> {
-        self.stack_frame_ptr.clone()
-    }
-
-    pub fn set_frame_ptr(
-        &mut self,
-        new_frame_ptr: Option<Gc<GcCell<Frame>>>,
-    ) -> Option<Gc<GcCell<Frame>>> {
-        let old_ptr = self.stack_frame_ptr.take();
-        self.stack_frame_ptr = new_frame_ptr;
-        old_ptr
-    }
-
-    pub fn get(&self, identity: impl AsRef<str>) -> Option<Ptr<Sexp>> {
-        let identity = identity.as_ref();
-        let mut cur = self.stack_frame_ptr.clone();
-        match from_fn(|| match cur.clone() {
-            None => None,
-            Some(frame_ptr) => {
-                cur = frame_ptr.borrow().pre.clone();
-                Some(frame_ptr)
-            }
-        })
-        .try_fold(Option::<()>::None, |_, frame| {
-            match Frame::read(frame, |frame| frame.get(identity).cloned()) {
-                Some(d) => Break(Some(d.clone())),
-                None => Continue(None),
-            }
-        }) {
-            Break(p) => p,
-            Continue(_) => self.global_table.get(identity).cloned(),
-        }
-    }
-
-    pub fn set(&mut self, identity: impl ToString, expr: Ptr<Sexp>) {
-        if let Some(frame) = self.stack_frame_ptr.clone() {
-            Frame::modify(frame, |frame| {
-                frame.insert(identity.to_string(), expr.clone());
-            });
-        } else {
-            panic!("No stack frame!");
-        }
-    }
-
-    pub fn set_global(&mut self, identity: impl ToString, expr: Ptr<Sexp>) {
-        self.global_table.insert(identity.to_string(), expr);
-    }
-
-    pub fn evaluate(&mut self, expr: Ptr<Sexp>) -> Ptr<Sexp> {
-        evaluate(expr, self)
-    }
-}
-
-impl Default for Env {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     env.push_frame();
