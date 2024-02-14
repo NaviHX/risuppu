@@ -1,5 +1,6 @@
 pub mod frame;
 pub mod env;
+use gc::Gc;
 use frame::Frame;
 pub use env::Env;
 
