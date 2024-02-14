@@ -82,6 +82,8 @@ fn atom(input: &str) -> IResult<&str, Ptr<Sexp>> {
             parse_sexp_keyword!("macro", Sexp::Macro),
             parse_sexp_keyword!("eval", Sexp::Eval),
             parse_sexp_keyword!("define", Sexp::Define),
+            parse_sexp_keyword!("provide", Sexp::Provide),
+            parse_sexp_keyword!("require", Sexp::Require),
             wrap_seperator!(map(preceded(tag("#\\"), anychar), Sexp::Char)),
             wrap_seperator!(map(nom::character::complete::i32, Sexp::I32)),
             wrap_seperator!(sstring),
@@ -131,6 +133,8 @@ mod test {
         assert_eq!(parse_sexp("macro").unwrap().1, Sexp::wrap(Sexp::Macro));
         assert_eq!(parse_sexp("eval").unwrap().1, Sexp::wrap(Sexp::Eval));
         assert_eq!(parse_sexp("define").unwrap().1, Sexp::wrap(Sexp::Define));
+        assert_eq!(parse_sexp("provide").unwrap().1, Sexp::wrap(Sexp::Provide));
+        assert_eq!(parse_sexp("require").unwrap().1, Sexp::wrap(Sexp::Require));
     }
 
     #[test]

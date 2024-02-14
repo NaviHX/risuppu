@@ -46,6 +46,10 @@ pub enum Sexp {
     SString(String),
     Bool(bool),
 
+    // Module support
+    Provide,
+    Require,
+
     // Identity
     Identifier(String),
 
@@ -144,6 +148,8 @@ impl Sexp {
     keyword_wrapper!(r#macro, Sexp::Macro);
     keyword_wrapper!(eval, Sexp::Eval);
     keyword_wrapper!(define, Sexp::Define);
+    keyword_wrapper!(require, Sexp::Require);
+    keyword_wrapper!(provide, Sexp::Provide);
 
     literal_wrapper!(int, i32, Sexp::I32);
     literal_wrapper!(r#char, char, Sexp::Char);
@@ -184,6 +190,8 @@ impl Display for Sexp {
             Sexp::RustFn(_) => write!(f, "rustfn"),
             Sexp::Eval => write!(f, "eval"),
             Sexp::Define => write!(f, "define"),
+            Sexp::Require => write!(f, "require"),
+            Sexp::Provide => write!(f, "provide"),
             Sexp::Nil => write!(f, "()"),
             Sexp::I32(n) => write!(f, "{}", n),
             Sexp::Char(c) => write!(f, "'{}'", c),
