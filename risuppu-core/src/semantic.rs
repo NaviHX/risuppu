@@ -5,6 +5,9 @@ pub use env::Env;
 
 use crate::sexp::{Cons, Ptr, Sexp};
 
+mod module;
+use self::module::{process_require, process_provide};
+
 pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     env.push_frame();
     let cur_top = env.top_frame();
@@ -37,6 +40,8 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     }
                     Sexp::Eval => evaluate(cdr, env),
                     Sexp::Define => process_define(cdr, env),
+                    Sexp::Require => process_require(cdr, env),
+                    Sexp::Provide => process_provide(cdr, env),
 
                     // Do nothing if the first sexp is nil.
                     Sexp::Nil => break car.clone(),
