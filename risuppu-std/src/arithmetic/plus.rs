@@ -1,8 +1,8 @@
 use std::iter;
 
-use risuppu::sexp::{Ptr, Sexp};
+use risuppu::{sexp::{Ptr, Sexp}, semantic::Env};
 
-pub fn plus(mut args: Ptr<Sexp>) -> Ptr<Sexp> {
+pub fn plus(mut args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     let sum = iter::from_fn(|| {
         if args.is_nil() {
             None
@@ -23,19 +23,21 @@ pub fn plus(mut args: Ptr<Sexp>) -> Ptr<Sexp> {
 
 #[cfg(test)]
 mod test {
-    use risuppu::sexp::Sexp;
+    use risuppu::{sexp::Sexp, semantic::Env};
 
     #[test]
     fn plus() {
         let numbers = Sexp::from_vec([Sexp::int(1), Sexp::int(2), Sexp::int(3)]);
-        let sum = super::plus(numbers);
+        let mut env = Env::new();
+        let sum = super::plus(numbers, &mut env);
         assert_eq!(sum, Sexp::int(6));
     }
 
     #[test]
     fn plus_0() {
-        let list = super::plus(Sexp::nil());
-        let sum = super::plus(list);
+        let list = Sexp::from_vec([Sexp::nil()]);
+        let mut env = Env::new();
+        let sum = super::plus(list, &mut env);
         assert_eq!(sum, Sexp::int(0));
     }
 }
