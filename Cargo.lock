@@ -293,6 +293,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "risuppu-std"
+version = "0.1.0"
+dependencies = [
+ "risuppu",
+]
+
+[[package]]
 name = "rustix"
 version = "0.38.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"

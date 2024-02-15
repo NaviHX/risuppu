@@ -2,6 +2,7 @@
 members = [
     "risuppu-core",
     "risuppu-repl",
+    "risuppu-std",
 ]
 resolver = "2"
 
