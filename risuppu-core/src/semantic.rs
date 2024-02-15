@@ -73,7 +73,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 
                     // Apply the CDR to the Rust function.
                     Sexp::RustFn(f) => {
-                        f.call(cdr)
+                        f.call(cdr, env)
                     }
 
                     exp => {
@@ -369,7 +369,7 @@ mod test {
     fn eval_rust_fn() {
         let mut env = Env::new();
         let mut v = 0;
-        let f = move |_| {
+        let f = move |_, _: &mut Env| {
             v += 1;
             Sexp::int(v)
         };

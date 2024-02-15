@@ -2,9 +2,11 @@ use std::{fmt::Debug, cell::RefCell};
 
 use gc::{Finalize, Trace};
 
+use crate::semantic::Env;
+
 use super::{Ptr, Sexp};
 
-type InnerRustFn = Box<RefCell<dyn FnMut(Ptr<Sexp>) -> Ptr<Sexp> + 'static>>;
+type InnerRustFn = Box<RefCell<dyn FnMut(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static>>;
 
 #[derive(Finalize)]
 pub struct RustFn {
@@ -14,14 +16,14 @@ pub struct RustFn {
 impl RustFn {
     /// # Safety
     /// Don't capture `Gc` value in the closure, which will escape from the gc management.
-    pub unsafe fn new(f: impl FnMut(Ptr<Sexp>) -> Ptr<Sexp> + 'static) -> Self {
+    pub unsafe fn new(f: impl FnMut(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static) -> Self {
         Self {
             inner: Box::new(RefCell::new(f))
         }
     }
 
-    pub fn call(&self, arg: Ptr<Sexp>) -> Ptr<Sexp> {
-        self.inner.borrow_mut()(arg)
+    pub fn call(&self, arg: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+        self.inner.borrow_mut()(arg, env)
     }
 }
 
