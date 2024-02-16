@@ -5,8 +5,8 @@ use risuppu::{
     sexp::{Ptr, Sexp},
 };
 
-pub fn divide(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
-    let init = args.car();
+pub fn divide(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+    let init = env.evaluate(args.car());
     let mut ms = args.cdr();
 
     if let Sexp::I32(init) = init.as_ref() {
@@ -14,7 +14,7 @@ pub fn divide(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
             if ms.is_nil() {
                 None
             } else {
-                let car = ms.car();
+                let car = env.evaluate(ms.car());
                 ms = ms.cdr();
                 Some(car)
             }

@@ -2,12 +2,12 @@ use std::iter;
 
 use risuppu::{sexp::{Ptr, Sexp}, semantic::Env};
 
-pub fn plus(mut args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
+pub fn plus(mut args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let sum = iter::from_fn(|| {
         if args.is_nil() {
             None
         } else {
-            let car = args.car();
+            let car = env.evaluate(args.car());
             args = args.cdr();
             Some(car)
         }

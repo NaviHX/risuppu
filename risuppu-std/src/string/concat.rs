@@ -1,9 +1,10 @@
 use risuppu::{sexp::{Ptr, Sexp}, semantic::Env};
 
-pub fn concat(mut args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
+pub fn concat(mut args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let mut v = vec![];
     while !args.is_nil() {
         let arg = args.car();
+        let arg = env.evaluate(arg);
         if let Sexp::SString(s) = arg.as_ref() {
             v.push(s.clone());
         } else {
