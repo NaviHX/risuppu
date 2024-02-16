@@ -19,7 +19,7 @@ pub fn multiply(mut args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
         Sexp::I32(a) => *a,
         _ => 1,
     })
-    .fold(1, |pre, n| pre * n);
+    .product();
 
     Sexp::int(sum)
 }

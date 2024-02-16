@@ -5,7 +5,7 @@ use risuppu::{
     sexp::{Ptr, Sexp},
 };
 
-pub fn divide(mut args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
+pub fn divide(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     let init = args.car();
     let mut ms = args.cdr();
 
