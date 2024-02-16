@@ -1,4 +1,5 @@
 super::std_library!(
     sequence,
-    (seq, "seq")
+    (seq, "seq"),
+    (r#do, "do")
 );
