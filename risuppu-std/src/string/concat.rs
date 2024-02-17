@@ -33,4 +33,13 @@ mod test {
         let numbers = super::concat(numbers, &mut env);
         assert_eq!(numbers, Sexp::string("OneTwoThree"));
     }
+
+    #[test]
+    fn concat_list() {
+        let mut env = Env::new();
+        let expr = "((car '(\"1\" \"3\")) \"2\" (car (cdr '(\"1\" \"3\"))))";
+        let expr = risuppu::sexp::parse::parse_sexp(expr).unwrap().1;
+        let concated = super::concat(expr, &mut env);
+        assert_eq!(concated, Sexp::string("123"));
+    }
 }

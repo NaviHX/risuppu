@@ -3,7 +3,7 @@ use risuppu::{
     sexp::{Ptr, Sexp},
 };
 
-pub fn r#let(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+pub fn r#let(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     let first_form = args.car();
     let (named, decls, cont) = if let Sexp::Identifier(_) = first_form.as_ref() {
         (Some(first_form), args.cdr().car(), args.cdr().cdr().car())
@@ -17,8 +17,7 @@ pub fn r#let(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
             let decl = decl.cdr().car();
 
             if let Sexp::Identifier(_) = ident.as_ref() {
-                let evaluated = env.evaluate(decl);
-                Some((ident, evaluated))
+                Some((ident, decl))
             } else {
                 None
             }

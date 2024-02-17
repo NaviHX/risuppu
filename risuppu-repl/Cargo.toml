@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 risuppu = { path = "../risuppu-core/" }
+risuppu-std = { path = "../risuppu-std/" }
 rustyline = "13.0.0"
 clap = { version = "4.4", features = ["derive"] }

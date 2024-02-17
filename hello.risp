@@ -1,1 +1,7 @@
-(print "Hello, World!\n")
+(let ((greeting "Hello, what's your name?\n")
+      (greeting-with-name '("Nice to meet you, ", ".\n")))
+  (do
+    (-> (print greeting))
+    (-> (read) (name))
+    (-> (print (concat (car greeting-with-name) name (car (cdr greeting-with-name)))))
+    name))

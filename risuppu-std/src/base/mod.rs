@@ -1,5 +1,5 @@
 super::std_library!(
-    sequence,
+    base,
     (seq, "seq"),
     (r#do, "do"),
     (and_then, "and-then"),

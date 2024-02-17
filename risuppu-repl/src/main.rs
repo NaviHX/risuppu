@@ -5,6 +5,10 @@ use std::path::Path;
 use risuppu::semantic::Env;
 use risuppu::sexp::parse::parse_sexp;
 
+use risuppu_std::base::base as load_base;
+use risuppu_std::string::string as load_string;
+use risuppu_std::arithmetic::arithmetic as load_arithmetic;
+
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 
@@ -39,6 +43,10 @@ fn main() {
     let arg: Arg = Arg::parse();
 
     let mut env = Env::new();
+    load_base(&mut env);
+    load_string(&mut env);
+    load_arithmetic(&mut env);
+
     for file in arg.files {
         if let Err(e) = evaluate_file(&file, &mut env) {
             println!("Error when evaluating {}: {}", file.to_string_lossy(), e);
