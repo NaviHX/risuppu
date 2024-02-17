@@ -1,11 +1,11 @@
+pub mod iter;
 pub mod parse;
 pub mod rustfn;
-pub mod iter;
-use gc::{Finalize, Gc, Trace, GcCell};
+use gc::{Finalize, Gc, GcCell, Trace};
 use std::fmt::Display;
 
+use self::{iter::SexpListIter, rustfn::RustFn};
 use crate::semantic::{frame::Frame, Env};
-use self::{rustfn::RustFn, iter::SexpListIter};
 
 pub type Ptr<T> = Gc<T>;
 
@@ -170,8 +170,19 @@ impl Sexp {
 
     /// # Safety
     /// Don't capture `Gc` value in the closure, which will escape from the gc management.
+    /// Don't recurse in the function body.
     pub unsafe fn rust_fn(f: impl FnMut(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static) -> Ptr<Self> {
         Sexp::wrap(Sexp::RustFn(RustFn::new(f)))
+    }
+
+    /// # Safety
+    /// Don't capture `Gc` value in the closure, which will escape from the gc management.
+    /// Don't recurse in f's body.
+    pub unsafe fn rust_fn_with_preprocess(
+        f: impl FnMut(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static,
+        p: impl Fn(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static,
+    ) -> Ptr<Self> {
+        Sexp::wrap(Sexp::RustFn(RustFn::new_with_preprocess(f, p)))
     }
 
     pub fn iter(list: Ptr<Sexp>) -> SexpListIter {

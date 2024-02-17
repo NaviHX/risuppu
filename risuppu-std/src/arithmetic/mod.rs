@@ -1,9 +1,11 @@
+use crate::pre_function;
+
 super::std_library!(
     arithmetic,
-    (plus, "+"),
-    (minus, "-"),
-    (multiply, "*"),
-    (divide, "/")
+    (plus, "+", pre_function),
+    (minus, "-", pre_function),
+    (multiply, "*", pre_function),
+    (divide, "/", pre_function)
 );
 
 #[cfg(test)]

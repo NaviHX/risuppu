@@ -5,3 +5,13 @@
     (-> (read) (name))
     (-> (print (concat (car greeting-with-name) name (car (cdr greeting-with-name)))))
     name))
+
+(define fact (lambda (n)
+               (if (eq n 1) 1
+                 (* n (fact (- n 1))))))
+
+(let ((res (fact 10)))
+  (do
+    (-> (print "Fact 10 = "))
+    (-> (print res))
+    (-> (print " .\n"))))

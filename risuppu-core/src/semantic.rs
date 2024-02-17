@@ -241,7 +241,7 @@ pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr
 
 #[cfg(test)]
 mod test {
-    use crate::sexp::{Sexp, parse::parse_sexp};
+    use crate::sexp::Sexp;
 
     use super::Env;
 
