@@ -10,6 +10,9 @@ mod module;
 use self::module::{process_require, process_provide};
 
 pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+    #[cfg(debug_assertions)]
+    println!("Eval: {}", sexp);
+
     env.push_frame();
     let cur_top = env.top_frame();
 
@@ -19,8 +22,10 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
         // If you want to inspect the sexp when debugging,
         // uncomment the following line.
         #[cfg(debug_assertions)]
-        #[allow(unused)]
         let s = sexp.to_string();
+
+        #[cfg(debug_assertions)]
+        println!("=> {}", s);
 
         sexp = match sexp.as_ref() {
             Sexp::Form(list) => {
@@ -97,6 +102,9 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     // Restore the stack.
     env.set_frame_ptr(cur_top);
     env.pop_frame();
+
+    #[cfg(debug_assertions)]
+    println!("Evaluated: {} => {}", sexp, evaluated);
     evaluated
 }
 
@@ -233,7 +241,7 @@ pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr
 
 #[cfg(test)]
 mod test {
-    use crate::sexp::Sexp;
+    use crate::sexp::{Sexp, parse::parse_sexp};
 
     use super::Env;
 
@@ -393,4 +401,5 @@ mod test {
         assert_eq!(env.evaluate(car_expr), Sexp::int(1));
         assert_eq!(env.evaluate(cdr_expr), Sexp::from_vec([Sexp::int(2)]));
     }
+
 }

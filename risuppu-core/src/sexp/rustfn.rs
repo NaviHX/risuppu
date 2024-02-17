@@ -23,6 +23,7 @@ impl RustFn {
     }
 
     pub fn call(&self, arg: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+        // BUG: Recursion will cause `BorrowMut: alread borrowed` error.
         self.inner.borrow_mut()(arg, env)
     }
 }
