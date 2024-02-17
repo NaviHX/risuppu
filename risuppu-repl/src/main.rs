@@ -53,9 +53,10 @@ fn main() {
         }
     }
 
-    // if !arg.interact {
-    //     return;
-    // }
+    #[cfg(not(debug_assertions))]
+    if !arg.interact {
+        return;
+    }
 
     let mut rl = DefaultEditor::new().expect("Cannot read line!");
 

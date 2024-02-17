@@ -18,7 +18,9 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 
         // If you want to inspect the sexp when debugging,
         // uncomment the following line.
-        // let s = sexp.to_string();
+        #[cfg(debug_assertions)]
+        #[allow(unused)]
+        let s = sexp.to_string();
 
         sexp = match sexp.as_ref() {
             Sexp::Form(list) => {
