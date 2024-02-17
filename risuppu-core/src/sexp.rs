@@ -1,10 +1,11 @@
 pub mod parse;
 pub mod rustfn;
+pub mod iter;
 use gc::{Finalize, Gc, Trace, GcCell};
 use std::fmt::Display;
 
 use crate::semantic::{frame::Frame, Env};
-use self::rustfn::RustFn;
+use self::{rustfn::RustFn, iter::SexpListIter};
 
 pub type Ptr<T> = Gc<T>;
 
@@ -171,6 +172,10 @@ impl Sexp {
     /// Don't capture `Gc` value in the closure, which will escape from the gc management.
     pub unsafe fn rust_fn(f: impl FnMut(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static) -> Ptr<Self> {
         Sexp::wrap(Sexp::RustFn(RustFn::new(f)))
+    }
+
+    pub fn iter(list: Ptr<Sexp>) -> SexpListIter {
+        SexpListIter::new(list)
     }
 }
 
