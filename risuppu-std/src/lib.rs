@@ -1,6 +1,6 @@
 pub mod string;
 pub mod arithmetic;
-pub mod sequence;
+pub mod base;
 
 #[allow(unused_macros)]
 #[macro_export]
