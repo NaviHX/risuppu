@@ -39,7 +39,7 @@ pub fn r#let(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
 
 #[cfg(test)]
 mod test {
-    use risuppu::semantic::Env;
+    use risuppu::{semantic::Env, sexp::Sexp};
 
     #[test]
     fn let_1() {
@@ -80,5 +80,14 @@ mod test {
         .unwrap()
         .1;
         assert_eq!(expanded, expected);
+    }
+
+    #[test]
+    fn let_list() {
+        let mut env = Env::new();
+        let expr = risuppu::sexp::parse::parse_sexp("(let ((l '(1 2))) (car l))").unwrap().1;
+        let expanded = super::r#let(expr, &mut env);
+        let expected = Sexp::int(1);
+        assert_eq!(env.evaluate(expanded), expected);
     }
 }

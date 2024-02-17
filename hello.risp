@@ -1,5 +1,5 @@
 (let ((greeting "Hello, what's your name?\n")
-      (greeting-with-name '("Nice to meet you, ", ".\n")))
+      (greeting-with-name '("Nice to meet you, " ".\n")))
   (do
     (-> (print greeting))
     (-> (read) (name))

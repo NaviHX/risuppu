@@ -53,9 +53,9 @@ fn main() {
         }
     }
 
-    if !arg.interact {
-        return;
-    }
+    // if !arg.interact {
+    //     return;
+    // }
 
     let mut rl = DefaultEditor::new().expect("Cannot read line!");
 

@@ -84,7 +84,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
             }
 
             Sexp::Identifier(ident) => match env.get(ident.as_str()) {
-                Some(sexp) => sexp,
+                Some(sexp) => break sexp,
                 None => break Ptr::new(Sexp::Nil),
             },
 
