@@ -1,4 +1,7 @@
-use risuppu::{sexp::{Ptr, Sexp}, semantic::Env};
+use risuppu::{
+    semantic::Env,
+    sexp::{Ptr, Sexp},
+};
 
 pub fn r#let(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let first_form = args.car();
@@ -8,23 +11,29 @@ pub fn r#let(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
         (None, first_form, args.cdr().car())
     };
 
-    let (idents, decls): (Vec<_>, Vec<_>) = Sexp::iter(decls).filter_map(|decl| {
-        let ident = decl.car();
-        let decl = decl.cdr().car();
+    let (idents, decls): (Vec<_>, Vec<_>) = Sexp::iter(decls)
+        .filter_map(|decl| {
+            let ident = decl.car();
+            let decl = decl.cdr().car();
 
-        if let Sexp::Identifier(_) = ident.as_ref() {
-            let evaluated = env.evaluate(decl);
-            Some((ident, evaluated))
-        } else {
-            None
-        }
-    }).unzip();
+            if let Sexp::Identifier(_) = ident.as_ref() {
+                let evaluated = env.evaluate(decl);
+                Some((ident, evaluated))
+            } else {
+                None
+            }
+        })
+        .unzip();
 
-    if let Some(_named) = named {
-        // TODO: impl named let
-        todo!()
+    let lambda = Sexp::from_vec([Sexp::lambda(), Sexp::from_vec(idents), cont]);
+    if let Some(named) = named {
+        let named_lambda = Sexp::from_vec([
+            Sexp::lambda(),
+            Sexp::from_vec([named]),
+            Sexp::cons(lambda.clone(), Sexp::from_vec(decls)),
+        ]);
+        Sexp::from_vec([named_lambda, lambda])
     } else {
-        let lambda = Sexp::from_vec([Sexp::lambda(), Sexp::from_vec(idents), cont]);
         Sexp::cons(lambda, Sexp::from_vec(decls))
     }
 }
@@ -36,18 +45,41 @@ mod test {
     #[test]
     fn let_1() {
         let mut env = Env::new();
-        let expr = risuppu::sexp::parse::parse_sexp("(((a 1)) (eq a 1))").unwrap().1;
+        let expr = risuppu::sexp::parse::parse_sexp("(((a 1)) (eq a 1))")
+            .unwrap()
+            .1;
         let expanded = super::r#let(expr, &mut env);
-        let expected = risuppu::sexp::parse::parse_sexp("((lambda (a) (eq a 1)) 1)").unwrap().1;
+        let expected = risuppu::sexp::parse::parse_sexp("((lambda (a) (eq a 1)) 1)")
+            .unwrap()
+            .1;
         assert_eq!(expanded, expected);
     }
 
     #[test]
     fn let_many() {
         let mut env = Env::new();
-        let expr = risuppu::sexp::parse::parse_sexp("(((a 1) (b 2)) (eq a b))").unwrap().1;
+        let expr = risuppu::sexp::parse::parse_sexp("(((a 1) (b 2)) (eq a b))")
+            .unwrap()
+            .1;
         let expanded = super::r#let(expr, &mut env);
-        let expected = risuppu::sexp::parse::parse_sexp("((lambda (a b) (eq a b)) 1 2)").unwrap().1;
+        let expected = risuppu::sexp::parse::parse_sexp("((lambda (a b) (eq a b)) 1 2)")
+            .unwrap()
+            .1;
+        assert_eq!(expanded, expected);
+    }
+
+    #[test]
+    fn let_named() {
+        let mut env = Env::new();
+        let expr = risuppu::sexp::parse::parse_sexp("(loop ((a 1) (b 2)) (loop a b))")
+            .unwrap()
+            .1;
+        let expanded = super::r#let(expr, &mut env);
+        let expected = risuppu::sexp::parse::parse_sexp(
+            "((lambda (loop) ((lambda (a b) (loop a b)) 1 2)) (lambda (a b) (loop a b)))",
+        )
+        .unwrap()
+        .1;
         assert_eq!(expanded, expected);
     }
 }
