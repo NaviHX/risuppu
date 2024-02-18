@@ -6,8 +6,10 @@ use risuppu::semantic::Env;
 use risuppu::sexp::parse::parse_sexp;
 
 use risuppu_std::base::base as load_base;
-use risuppu_std::string::string as load_string;
+#[cfg(feature = "arithmetic")]
 use risuppu_std::arithmetic::arithmetic as load_arithmetic;
+#[cfg(feature = "string")]
+use risuppu_std::string::string as load_string;
 
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
@@ -44,7 +46,9 @@ fn main() {
 
     let mut env = Env::new();
     load_base(&mut env);
+    #[cfg(feature = "string")]
     load_string(&mut env);
+    #[cfg(feature = "arithmetic")]
     load_arithmetic(&mut env);
 
     for file in arg.files {

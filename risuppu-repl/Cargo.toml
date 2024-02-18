@@ -7,6 +7,11 @@ edition = "2021"
 
 [dependencies]
 risuppu = { path = "../risuppu-core/" }
-risuppu-std = { path = "../risuppu-std/" }
+risuppu-std = { path = "../risuppu-std/", default-features = false }
 rustyline = "13.0.0"
 clap = { version = "4.4", features = ["derive"] }
+
+[features]
+default = ["string", "arithmetic"]
+string = ["risuppu-std/string"]
+arithmetic = ["risuppu-std/arithmetic"]

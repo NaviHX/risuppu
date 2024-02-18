@@ -1,7 +1,9 @@
 use risuppu::{sexp::{Sexp, Ptr}, semantic::Env};
 
-pub mod arithmetic;
 pub mod base;
+#[cfg(feature = "arithmetic")]
+pub mod arithmetic;
+#[cfg(feature = "string")]
 pub mod string;
 
 #[allow(unused_macros)]
