@@ -6,14 +6,18 @@ pub mod arithmetic;
 #[cfg(feature = "string")]
 pub mod string;
 
+pub use paste::paste;
+
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! std_library {
     ($mod_name:ident, $(($function_name:ident, $($r:tt)*)),*) => {
         $(mod $function_name;)*
 
-        pub fn $mod_name(env: &mut risuppu::semantic::Env) {
-            $($crate::load_fn!(env, $function_name, $($r)*));*
+        $crate::paste! {
+            pub fn [<load_ $mod_name>](env: &mut risuppu::semantic::Env) {
+                $($crate::load_fn!(env, $function_name, $($r)*));*
+            }
         }
     }
 }

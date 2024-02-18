@@ -15,7 +15,7 @@ mod test {
     #[test]
     fn fact() {
         let mut env = Env::new();
-        super::arithmetic(&mut env);
+        super::load_arithmetic(&mut env);
 
         env.evaluate(
             parse_sexp("(define fact (lambda (n) (if (eq n 1) 1 (* n (fact (- n 1))))))")
@@ -40,7 +40,7 @@ mod test {
     #[test]
     fn embedded_plus() {
         let mut env = Env::new();
-        super::arithmetic(&mut env);
+        super::load_arithmetic(&mut env);
 
         let res = env.evaluate(
             parse_sexp("(+ 1 (+ 2 3))")

@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 risuppu = { path = "../risuppu-core/" }
+paste = { version = "1" }
 
 [features]
 default = ["arithmetic", "string"]
