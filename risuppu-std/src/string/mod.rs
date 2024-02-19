@@ -1,4 +1,6 @@
+use crate::pre_function;
+
 super::std_library!(
     string,
-    (concat, "concat")
+    (concat, "concat", pre_function)
 );
