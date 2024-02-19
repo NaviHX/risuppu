@@ -10,6 +10,7 @@ risuppu = { path = "../risuppu-core/" }
 paste = { version = "1" }
 
 [features]
-default = ["arithmetic", "string"]
+default = ["arithmetic", "string", "bool"]
 arithmetic = []
 string = []
+bool = []

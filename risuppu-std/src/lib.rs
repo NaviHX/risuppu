@@ -5,6 +5,8 @@ pub mod base;
 pub mod arithmetic;
 #[cfg(feature = "string")]
 pub mod string;
+#[cfg(feature = "bool")]
+pub mod bool;
 
 pub use paste::paste;
 
