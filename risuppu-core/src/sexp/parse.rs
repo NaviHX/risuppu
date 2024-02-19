@@ -85,6 +85,14 @@ fn atom(input: &str) -> IResult<&str, Ptr<Sexp>> {
             parse_sexp_keyword!("provide", Sexp::Provide),
             parse_sexp_keyword!("require", Sexp::Require),
             wrap_seperator!(map(preceded(tag("#\\"), anychar), Sexp::Char)),
+            wrap_seperator!(map(
+                preceded(tag("#"), alt((tag("t"), tag("f")))),
+                |s| match s {
+                    "t" => Sexp::Bool(true),
+                    "f" => Sexp::Bool(false),
+                    _ => Sexp::Nil,
+                }
+            )),
             wrap_seperator!(map(nom::character::complete::i32, Sexp::I32)),
             wrap_seperator!(sstring),
             wrap_seperator!(identifier),
@@ -220,7 +228,10 @@ mod test {
                 Sexp::wrap(Sexp::Lambda),
                 Sexp::cons(
                     Sexp::cons(Sexp::wrap(Sexp::Identifier("a".to_string())), Sexp::nil()),
-                    Sexp::cons(Sexp::cons(Sexp::wrap(Sexp::Identifier("a".to_string())), Sexp::nil()), Sexp::nil())
+                    Sexp::cons(
+                        Sexp::cons(Sexp::wrap(Sexp::Identifier("a".to_string())), Sexp::nil()),
+                        Sexp::nil()
+                    )
                 )
             )
         )
