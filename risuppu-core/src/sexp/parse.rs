@@ -3,8 +3,8 @@ use nom::bytes::complete::tag;
 use nom::character::complete::anychar;
 use nom::combinator::{eof, map, peek};
 use nom::multi::{fold_many0, many_till};
-use nom::sequence::{delimited, preceded};
-use nom::IResult;
+use nom::sequence::{delimited, preceded, tuple};
+use nom::{IResult, Parser};
 
 use crate::sexp::{Ptr, Sexp};
 
@@ -51,8 +51,12 @@ fn object(input: &str) -> IResult<&str, Ptr<Sexp>> {
     ))(input)
 }
 
+fn comment(input: &str) -> IResult<&str, ()> {
+    map(tuple((tag(";;"), many_till(anychar, tag("\n")))), |_| ())(input)
+}
+
 fn seperator(input: &str) -> IResult<&str, ()> {
-    map(alt((tag(" "), tag("\t"), tag("\n"))), |_| ())(input)
+    (map(alt((tag(" "), tag("\t"), tag("\n"))), |_| ()).or(comment)).parse(input)
 }
 
 fn discard_seperator_many0(input: &str) -> IResult<&str, ()> {
@@ -235,5 +239,19 @@ mod test {
                 )
             )
         )
+    }
+
+    #[test]
+    fn parse_trailing_comment() {
+        let expr = parse_sexp("(test ;; This is comment\n test)").unwrap().1;
+        let expected = Sexp::from_vec([Sexp::identifier("test"), Sexp::identifier("test")]);
+        assert_eq!(expr, expected);
+    }
+
+    #[test]
+    fn parse_line_comment() {
+        let expr = parse_sexp(";; This is comment\n(test test)").unwrap().1;
+        let expected = Sexp::from_vec([Sexp::identifier("test"), Sexp::identifier("test")]);
+        assert_eq!(expr, expected);
     }
 }
