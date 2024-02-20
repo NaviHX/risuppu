@@ -41,6 +41,8 @@ pub fn r#let(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
 mod test {
     use risuppu::{semantic::Env, sexp::Sexp};
 
+    use crate::{base::load_base, arithmetic::load_arithmetic};
+
     #[test]
     fn let_1() {
         let mut env = Env::new();
@@ -89,5 +91,16 @@ mod test {
         let expanded = super::r#let(expr, &mut env);
         let expected = Sexp::int(1);
         assert_eq!(env.evaluate(expanded), expected);
+    }
+
+    #[test]
+    fn let_loop() {
+        let mut env = Env::new();
+        load_base(&mut env);
+        load_arithmetic(&mut env);
+        let expr = risuppu::sexp::parse::parse_sexp("(let loop ((n 5)) (+ n (if (eq n 1) 0 (loop (- n 1)))))").unwrap().1;
+        let evaluated = env.evaluate(expr);
+        let expected = Sexp::int(15);
+        assert_eq!(evaluated, expected);
     }
 }

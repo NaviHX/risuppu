@@ -66,15 +66,21 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     // Evaluate the CAR and Replace it with the result.
                     // Then evaluate the whole expression again.
                     Sexp::Form(list) => {
-                        if list.car == Sexp::lambda() || list.car.is_macro() {
-                            apply_list_to(cdr, car, env)
-                        } else if let Sexp::CapturedLambda(captured_frame) = list.car.as_ref() {
-                            // Restore the captured environment.
-                            env.set_frame_ptr(Some(captured_frame.clone()));
-                            apply_list_to(cdr, car, env)
-                        } else {
-                            let new_car = evaluate(car.clone(), env);
-                            Ptr::new(Sexp::Form(Cons::new(new_car, cdr)))
+                        match list.car.as_ref() {
+                            Sexp::Lambda => {
+                                let args = eval_args(cdr, env);
+                                apply_list_to(args, car, env)
+                            }
+                            Sexp::CapturedLambda(captured_frame) => {
+                                let args = eval_args(cdr, env);
+                                env.set_frame_ptr(Some(captured_frame.clone()));
+                                apply_list_to(args, car, env)
+                            }
+                            Sexp::Macro => apply_list_to(cdr, car, env),
+                            _ => {
+                                let new_car = env.evaluate(car.clone());
+                                Sexp::cons(new_car, cdr)
+                            }
                         }
                     }
 
@@ -205,6 +211,11 @@ pub fn process_print(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     Sexp::from_vec(vec![func])
 }
 
+pub fn eval_args(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+    let evaluated_args: Vec<_> = Sexp::iter(args).map(|a| env.evaluate(a)).collect();
+    Sexp::from_vec(evaluated_args)
+}
+
 pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let first_token = expr.car();
     let mut params = expr.cdr().car();
@@ -219,11 +230,7 @@ pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr
         let (arg, remaining_args) = (args.car(), args.cdr());
         if let Sexp::Identifier(ident) = first_param.as_ref() {
             match first_token.as_ref() {
-                Sexp::Lambda | Sexp::CapturedLambda(_) => {
-                    let arg = evaluate(arg, env);
-                    env.set(ident, arg);
-                }
-                Sexp::Macro => env.set(ident, arg),
+                Sexp::Macro | Sexp::Lambda | Sexp::CapturedLambda(_) => env.set(ident, arg),
                 _ => panic!("Cannot apply to a non-lambda expr!"),
             }
         }
