@@ -12,6 +12,8 @@ use self::module::{process_require, process_provide};
 pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     #[cfg(debug_assertions)]
     println!("Eval: {}", sexp);
+    #[cfg(debug_assertions)]
+    let orig_sexp = sexp.clone();
 
     env.push_frame();
     let cur_top = env.top_frame();
@@ -48,6 +50,8 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                         let new_expr = Sexp::cons(new_lambda, cdr);
                         break new_expr;
                     }
+                    Sexp::Macro => break sexp.clone(),
+                    Sexp::CapturedLambda(_) => break sexp.clone(),
                     Sexp::Eval => evaluate(cdr, env),
                     Sexp::Define => process_define(cdr, env),
                     Sexp::Require => process_require(cdr, env),
@@ -110,7 +114,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     env.pop_frame();
 
     #[cfg(debug_assertions)]
-    println!("Evaluated: {} => {}", sexp, evaluated);
+    println!("Evaluated: {} => {}", orig_sexp, evaluated);
     evaluated
 }
 
