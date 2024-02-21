@@ -43,9 +43,8 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     Sexp::Car => break process_car(cdr, env),
                     Sexp::Cdr => break process_cdr(cdr, env),
                     Sexp::Lambda => {
-                        // Push a new frame to avoid modifing the captured environment.
+                        // Capture the current environment.
                         let current_frame_ptr = env.top_frame().expect("No stack frame!");
-                        let current_frame_ptr = Frame::push(Some(current_frame_ptr));
                         let new_lambda = Sexp::lambda_capture(current_frame_ptr);
                         let new_expr = Sexp::cons(new_lambda, cdr);
                         break new_expr;
@@ -229,6 +228,9 @@ pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr
         return expr;
     }
 
+    // Protect the captured environment.
+    env.push_frame();
+
     while !args.is_nil() {
         let (first_param, remaining_params) = (params.car(), params.cdr());
         let (arg, remaining_args) = (args.car(), args.cdr());
@@ -246,7 +248,12 @@ pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr
     if params.is_nil() {
         body
     } else {
-        Sexp::from_vec(vec![first_token, params, body])
+        let new_first_token = if first_token.is_lambda() {
+            Sexp::lambda_capture(env.top_frame().expect("No stack frame!"))
+        } else {
+            first_token
+        };
+        Sexp::from_vec(vec![new_first_token, params, body])
     }
 }
 
