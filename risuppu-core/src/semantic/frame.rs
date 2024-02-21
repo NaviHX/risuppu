@@ -26,7 +26,7 @@ impl Frame {
     }
 
     pub fn pop(cur: MutPtr<Self>) -> Option<MutPtr<Self>> {
-        cur.borrow_mut().pre.take()
+        cur.borrow_mut().pre.clone()
     }
 
     pub fn modify(frame_ptr: MutPtr<Self>, mut f: impl FnMut(&mut InnerFrame)) -> MutPtr<Self> {
@@ -36,5 +36,16 @@ impl Frame {
 
     pub fn read<O>(frame_ptr: MutPtr<Self>, mut f: impl FnMut(&InnerFrame) -> O) -> O {
         f(& frame_ptr.borrow().inner)
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn debug(&self) {
+        println!("--- FRAME ---");
+        for (k, v) in self.inner.iter() {
+            println!("{k} -> {v}");
+        }
+        if let Some(pre) = self.pre.as_ref() {
+            pre.borrow().debug()
+        }
     }
 }

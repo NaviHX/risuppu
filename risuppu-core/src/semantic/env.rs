@@ -42,6 +42,15 @@ impl Env {
         &mut self,
         new_frame_ptr: Option<Gc<GcCell<Frame>>>,
     ) -> Option<Gc<GcCell<Frame>>> {
+        #[cfg(debug_assertions)]
+        {
+            if let Some(p) = new_frame_ptr.as_ref() {
+                let raw = gc::Gc::into_raw(p.clone());
+                println!("Switched frame ptr to {:p}:", raw);
+                p.borrow().debug();
+                unsafe { Gc::from_raw(raw) };
+            }
+        }
         let old_ptr = self.stack_frame_ptr.take();
         self.stack_frame_ptr = new_frame_ptr;
         old_ptr

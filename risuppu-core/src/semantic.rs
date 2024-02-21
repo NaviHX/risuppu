@@ -1,7 +1,6 @@
 pub mod frame;
 pub mod env;
 use gc::Gc;
-use frame::Frame;
 pub use env::Env;
 
 use crate::sexp::{Cons, Ptr, Sexp};
@@ -45,6 +44,14 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     Sexp::Lambda => {
                         // Capture the current environment.
                         let current_frame_ptr = env.top_frame().expect("No stack frame!");
+                        #[cfg(debug_assertions)]
+                        {
+                            let p = current_frame_ptr.clone();
+                            let raw = Gc::into_raw(p);
+                            println!("Captured frame {:p}:", raw);
+                            current_frame_ptr.borrow().debug();
+                            unsafe { Gc::from_raw(raw) };
+                        }
                         let new_lambda = Sexp::lambda_capture(current_frame_ptr);
                         let new_expr = Sexp::cons(new_lambda, cdr);
                         break new_expr;
@@ -76,6 +83,10 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                             }
                             Sexp::CapturedLambda(captured_frame) => {
                                 let args = eval_args(cdr, env);
+                                #[cfg(debug_assertions)]
+                                {
+                                    println!("Entered environment captured by {}", car);
+                                }
                                 env.set_frame_ptr(Some(captured_frame.clone()));
                                 apply_list_to(args, car, env)
                             }
@@ -109,6 +120,10 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     };
 
     // Restore the stack.
+    #[cfg(debug_assertions)]
+    {
+        println!("Restored stack");
+    }
     env.set_frame_ptr(cur_top);
     env.pop_frame();
 
