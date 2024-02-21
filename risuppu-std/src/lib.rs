@@ -45,3 +45,38 @@ pub fn pre_function(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let args: Vec<_> = Sexp::iter(args).map(|s| env.evaluate(s)).collect();
     Sexp::from_vec(args)
 }
+
+#[cfg(test)]
+mod test {
+    use risuppu::{sexp::{parse::parse_sexp, Sexp}, semantic::Env};
+
+    use crate::arithmetic::load_arithmetic;
+
+    #[test]
+    fn omega() {
+        let sum = parse_sexp("(lambda (s p n) (if (eq n 0) p (s s (+ p n) (- n 1))))").unwrap().1;
+        let omega = parse_sexp("(lambda (f) (f f))").unwrap().1;
+        let mut env = Env::new();
+        load_arithmetic(&mut env);
+        env.evaluate(Sexp::from_vec([Sexp::define(), Sexp::identifier("sum"), sum]));
+        env.evaluate(Sexp::from_vec([Sexp::define(), Sexp::identifier("omega"), omega]));
+        let sum5 = parse_sexp("((omega sum) 0 5)").unwrap().1;
+        let res = env.evaluate(sum5);
+        assert_eq!(res, Sexp::int(15));
+    }
+
+    #[test]
+    fn y() {
+        let sum = parse_sexp("(lambda (s p n) (if (eq n 0) p (s (+ p n) (- n 1))))").unwrap().1;
+        let omega = parse_sexp("(lambda (f) (f f))").unwrap().1;
+        let y = parse_sexp("(lambda (f) (omega (lambda (g) (f (g g)))))").unwrap().1;
+        let mut env = Env::new();
+        load_arithmetic(&mut env);
+        env.evaluate(Sexp::from_vec([Sexp::define(), Sexp::identifier("sum"), sum]));
+        env.evaluate(Sexp::from_vec([Sexp::define(), Sexp::identifier("omega"), omega]));
+        env.evaluate(Sexp::from_vec([Sexp::define(), Sexp::identifier("y"), y]));
+        let sum5 = parse_sexp("((y sum) 0 5)").unwrap().1;
+        let res = env.evaluate(sum5);
+        assert_eq!(res, Sexp::int(15));
+    }
+}

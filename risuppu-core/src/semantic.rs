@@ -64,7 +64,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     // and then evaluate the whole expression again.
                     Sexp::Identifier(ident) => match env.get(ident.as_str()) {
                         Some(new_car) => Ptr::new(Sexp::Form(Cons::new(new_car, cdr))),
-                        None => Ptr::new(Sexp::Nil),
+                        None => panic!("Cannot find ident: {ident}"),
                     },
 
                     // Evaluate the CAR and Replace it with the result.
@@ -102,7 +102,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 
             Sexp::Identifier(ident) => match env.get(ident.as_str()) {
                 Some(sexp) => break sexp,
-                None => break Ptr::new(Sexp::Nil),
+                None => panic!("Cannot find ident: {ident}"),
             },
 
             _ => break sexp.clone(),
@@ -252,7 +252,7 @@ pub fn apply_list_to(mut args: Ptr<Sexp>, expr: Ptr<Sexp>, env: &mut Env) -> Ptr
 
 #[cfg(test)]
 mod test {
-    use crate::sexp::Sexp;
+    use crate::sexp::{Sexp, parse::parse_sexp};
 
     use super::Env;
 
