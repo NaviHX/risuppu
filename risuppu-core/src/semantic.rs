@@ -413,4 +413,13 @@ mod test {
         assert_eq!(env.evaluate(cdr_expr), Sexp::from_vec([Sexp::int(2)]));
     }
 
+    #[test]
+    fn lambda_stack_protection() {
+        let mut env = Env::new();
+        env.evaluate(parse_sexp("(define f (lambda (a b) a))").unwrap().1);
+        env.evaluate(parse_sexp("(define f1 (f 1))").unwrap().1);
+        env.evaluate(parse_sexp("(f 2)").unwrap().1);
+        let res = env.evaluate(parse_sexp("(f1 1)").unwrap().1);
+        assert_eq!(res, Sexp::int(1));
+    }
 }
