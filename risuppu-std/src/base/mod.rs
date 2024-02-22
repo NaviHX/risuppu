@@ -6,5 +6,6 @@ super::std_library!(
     (seq, "seq", pre_function),
     (r#do, "do"),
     (and_then, "and-then", eval_cond),
-    (r#let, "let")
+    (r#let, "let"),
+    (cond, "cond")
 );
