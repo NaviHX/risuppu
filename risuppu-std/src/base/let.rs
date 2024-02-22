@@ -109,11 +109,18 @@ mod test {
             .1;
         let expanded = super::r#let(expr, &mut env);
         let expected = risuppu::sexp::parse::parse_sexp(
-            "((lambda (loop) ((lambda (a b) (loop a b)) 1 2)) (lambda (a b) (loop a b)))",
+            "(((lambda (f) ((lambda (f) (f f)) (lambda (g) (lambda (a b) ((f (g g)) a b))))) (lambda (loop a b) (loop a b))) 1 2)",
         )
         .unwrap()
         .1;
-        assert_eq!(expanded, expected);
+
+        // assert_eq!(expanded, expected);
+        // The exprs are too complicated to debug.
+        if expanded != expected {
+            println!("expanded = {}", expanded);
+            println!("expected = {}", expected);
+            panic!("The let-form wasn't expanded to the expected form!")
+        }
     }
 
     #[test]
