@@ -58,15 +58,13 @@ pub fn r#let(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
         })
         .unzip();
 
-    let lambda = Sexp::from_vec([Sexp::lambda(), Sexp::from_vec(idents), cont]);
     if let Some(named) = named {
-        let named_lambda = Sexp::from_vec([
-            Sexp::lambda(),
-            Sexp::from_vec([named]),
-            Sexp::cons(lambda.clone(), Sexp::from_vec(decls)),
-        ]);
-        Sexp::from_vec([named_lambda, lambda])
+        let lambda = Sexp::from_vec([Sexp::lambda(), Sexp::cons(named, Sexp::from_vec(idents.clone())), cont]);
+        let yc = y(idents);
+        let yc_lambda = Sexp::from_vec([yc, lambda]);
+        Sexp::cons(yc_lambda, Sexp::from_vec(decls))
     } else {
+        let lambda = Sexp::from_vec([Sexp::lambda(), Sexp::from_vec(idents), cont]);
         Sexp::cons(lambda, Sexp::from_vec(decls))
     }
 }
