@@ -3,6 +3,40 @@ use risuppu::{
     sexp::{Ptr, Sexp},
 };
 
+fn omega() -> Ptr<Sexp> {
+    Sexp::from_vec([
+        Sexp::lambda(),
+        Sexp::from_vec([Sexp::identifier("f")]),
+        Sexp::from_vec([Sexp::identifier("f"), Sexp::identifier("f")]),
+    ])
+}
+
+fn y(params: Vec<Ptr<Sexp>>) -> Ptr<Sexp> {
+    let params = Sexp::from_vec(params);
+    Sexp::from_vec([
+        Sexp::lambda(),
+        Sexp::from_vec([Sexp::identifier("f")]),
+        Sexp::from_vec([
+            omega(),
+            Sexp::from_vec([
+                Sexp::lambda(),
+                Sexp::from_vec([Sexp::identifier("g")]),
+                Sexp::from_vec([
+                    Sexp::lambda(),
+                    params.clone(),
+                    Sexp::cons(
+                        Sexp::from_vec([
+                            Sexp::identifier("f"),
+                            Sexp::from_vec([Sexp::identifier("g"), Sexp::identifier("g")]),
+                        ]),
+                        params,
+                    ),
+                ]),
+            ]),
+        ]),
+    ])
+}
+
 pub fn r#let(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     let first_form = args.car();
     let (named, decls, cont) = if let Sexp::Identifier(_) = first_form.as_ref() {
