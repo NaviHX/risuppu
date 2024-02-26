@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::sexp::{Ptr, Sexp};
 
 use super::Env;
@@ -12,11 +14,11 @@ pub fn process_provide(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 }
 
 pub fn process_require(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
-    let mut required_env = Env::new();
+    // TODO: Clone cost
+    let mut required_env = env.clone();
     let module_name = body.car();
     let prefix = body.cdr().car();
 
-    // TODO: Read module specified with a identifier, which will load library in $RISP_LIB .
     if let Sexp::SString(module) = module_name.as_ref() {
         match std::fs::read_to_string(module) {
             Ok(content) => {
@@ -25,6 +27,24 @@ pub fn process_require(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
             }
             Err(e) => {
                 println!("Error when requiring '{module}': {e}");
+                return Sexp::nil();
+            }
+        }
+    }
+
+    if let Sexp::Identifier(module) = module_name.as_ref() {
+        let mut module_path: PathBuf = std::env::var("RISP_LIB")
+            .expect("Cannot found $RISP_LIB. Please set the environment var before running")
+            .into();
+        module_path.push(format!("{module}.risp"));
+        match std::fs::read_to_string(module_path.clone()) {
+            Ok(content) => {
+                let buf = content.as_str();
+                evaluate_buf(buf, &mut required_env);
+            }
+            Err(e) => {
+                println!("Error when requiring '{}': {e}", module_path.to_str().unwrap());
+                return Sexp::nil();
             }
         }
     }

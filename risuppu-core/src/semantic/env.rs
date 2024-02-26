@@ -7,6 +7,7 @@ use crate::sexp::{Ptr, Sexp};
 use gc::{Gc, GcCell};
 use super::frame::Frame;
 
+#[derive(Clone)]
 pub struct Env {
     global_table: HashMap<String, Ptr<Sexp>>,
     provided_table: HashMap<String, Ptr<Sexp>>,
