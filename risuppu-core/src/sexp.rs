@@ -104,7 +104,7 @@ impl Sexp {
     }
 
     pub fn is_nil(&self) -> bool {
-        matches!(self, Self::Nil)
+        matches!(self, Self::Nil) || (matches!(self, Self::Form(_)) && self.car().is_nil() && self.cdr().is_nil())
     }
 
     pub fn is_lambda(&self) -> bool {
@@ -247,5 +247,20 @@ impl Display for Cons {
                 write!(f, "{} . {}", car, cdr)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::sexp::{Sexp, Cons};
+
+    #[test]
+    fn nil_is_nil() {
+        assert!(Sexp::Nil.is_nil())
+    }
+
+    #[test]
+    fn nil_form_is_nil() {
+        assert!(Sexp::Form(Cons { car: Sexp::nil(), cdr: Sexp::nil() }).is_nil())
     }
 }

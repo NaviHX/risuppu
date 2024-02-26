@@ -23,3 +23,28 @@ impl Iterator for SexpListIter {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::sexp::{Cons, Ptr, Sexp};
+
+    #[test]
+    fn iter_nothing() {
+        let expr = Sexp::from_vec::<[Ptr<Sexp>; 0]>([]);
+        let mut it = Sexp::iter(expr);
+
+        assert_eq!(it.next(), None);
+    }
+
+    #[test]
+    fn iter_nil_form() {
+        let expr = Sexp::Form(Cons {
+            car: Sexp::nil(),
+            cdr: Sexp::nil(),
+        });
+        let expr = Ptr::new(expr);
+        let mut it = Sexp::iter(expr);
+
+        assert_eq!(it.next(), None);
+    }
+}

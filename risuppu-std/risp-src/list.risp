@@ -32,6 +32,13 @@
                      (if (predicate (car remaining)) pos
                        (loop (cdr remaining) (+ pos 1))))))
 
+;; Import arithmetic module
+(define count (lambda (lst)
+                (fold
+                  (lambda (count elem) (+ count 1))
+                  0
+                  lst)))
+
 (provide list __builtin_list)
 (provide fold __builtin_fold)
 (provide map __builtin_map)
@@ -40,3 +47,4 @@
 (provide rev rev)
 (provide find find)
 (provide position position)
+(provide count count)
