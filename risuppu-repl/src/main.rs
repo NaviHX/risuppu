@@ -8,6 +8,8 @@ use risuppu::sexp::parse::parse_sexp;
 use risuppu_std::base::load_base;
 #[cfg(feature = "arithmetic")]
 use risuppu_std::arithmetic::load_arithmetic;
+#[cfg(feature = "list")]
+use risuppu_std::list::load_list;
 #[cfg(feature = "string")]
 use risuppu_std::string::load_string;
 
@@ -50,6 +52,8 @@ fn main() {
     load_string(&mut env);
     #[cfg(feature = "arithmetic")]
     load_arithmetic(&mut env);
+    #[cfg(feature = "list")]
+    load_list(&mut env);
 
     for file in arg.files {
         if let Err(e) = evaluate_file(&file, &mut env) {
