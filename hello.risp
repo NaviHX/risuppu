@@ -1,3 +1,6 @@
+(require std/string)
+(require std/arithmetic)
+
 (let ((greeting "Hello, what's your name?\n")
       (greeting-with-name '("Nice to meet you, " ".\n")))
   (do
