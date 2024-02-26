@@ -55,6 +55,12 @@ fn main() {
     #[cfg(feature = "list")]
     load_list(&mut env);
 
+    if let Some(conf) = arg.configuration_file {
+        if let Err(e) = evaluate_file(&conf, &mut env) {
+            println!("Error when evaluating the configuration file {}: {}", conf.to_string_lossy(), e);
+        }
+    }
+
     for file in arg.files {
         if let Err(e) = evaluate_file(&file, &mut env) {
             println!("Error when evaluating {}: {}", file.to_string_lossy(), e);

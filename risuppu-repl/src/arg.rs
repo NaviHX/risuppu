@@ -11,4 +11,8 @@ pub struct Arg {
     /// Non-interaction mode
     #[arg(short, long, default_value_t = false)]
     pub interact: bool,
+
+    /// Configuration file
+    #[arg(short, long, env = "RISP_CONF")]
+    pub configuration_file: Option<PathBuf>,
 }

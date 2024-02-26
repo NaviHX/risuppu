@@ -9,7 +9,7 @@ edition = "2021"
 risuppu = { path = "../risuppu-core/" }
 risuppu-std = { path = "../risuppu-std/", default-features = false }
 rustyline = "13.0.0"
-clap = { version = "4.4", features = ["derive"] }
+clap = { version = "4.4", features = ["derive", "env"] }
 
 [features]
 default = ["string", "arithmetic", "list"]
