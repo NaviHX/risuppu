@@ -4,13 +4,15 @@ mod plus;
 mod minus;
 mod multiply;
 mod divide;
+mod modular;
 
 super::std_library!(
     arithmetic,
     (plus::plus, "__builtin_+", pre_function),
     (minus::minus, "__builtin_-", pre_function),
     (multiply::multiply, "__builtin_*", pre_function),
-    (divide::divide, "__builtin_/", pre_function)
+    (divide::divide, "__builtin_/", pre_function),
+    (modular::modular, "__builtin_mod", pre_function)
 );
 
 #[cfg(test)]
