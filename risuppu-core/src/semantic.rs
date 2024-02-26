@@ -104,8 +104,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     }
 
                     exp => {
-                        println!("Error: {exp:?} is not appliable!");
-                        break sexp.clone();
+                        panic!("Error: {exp:?} is not appliable!");
                     }
                 }
             }
