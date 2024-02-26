@@ -17,10 +17,14 @@ crate::std_library!(
     (id, "flat-map", flat_map::flat_map)
 );
 
+pub fn quote(args: Ptr<Sexp>) -> Ptr<Sexp> {
+    Sexp::from_vec([Sexp::quote(), args])
+}
+
 pub fn create_list(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
-    Sexp::from_vec(
+    quote(Sexp::from_vec(
         Sexp::iter(args)
             .map(|arg| env.evaluate(arg))
             .collect::<Vec<_>>(),
-    )
+    ))
 }

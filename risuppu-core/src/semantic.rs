@@ -427,8 +427,9 @@ mod test {
     fn eval_car_and_cdr() {
         let mut env = Env::new();
         let list = Sexp::from_vec([Sexp::int(1), Sexp::int(2)]);
-        let car_expr = Sexp::from_vec([Sexp::car_token(), list.clone()]);
-        let cdr_expr = Sexp::from_vec([Sexp::cdr_token(), list.clone()]);
+        let quoted_list = Sexp::from_vec([Sexp::quote(), list]);
+        let car_expr = Sexp::from_vec([Sexp::car_token(), quoted_list.clone()]);
+        let cdr_expr = Sexp::from_vec([Sexp::cdr_token(), quoted_list.clone()]);
 
         assert_eq!(env.evaluate(car_expr), Sexp::int(1));
         assert_eq!(env.evaluate(cdr_expr), Sexp::from_vec([Sexp::int(2)]));

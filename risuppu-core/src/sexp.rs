@@ -171,6 +171,7 @@ impl Sexp {
     /// # Safety
     /// Don't capture `Gc` value in the closure, which will escape from the gc management.
     /// Don't recurse in the function body.
+    /// Quote the ret-value if it might be a list and this function is not a macro.
     pub unsafe fn rust_fn(f: impl FnMut(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static) -> Ptr<Self> {
         Sexp::wrap(Sexp::RustFn(RustFn::new(f)))
     }
@@ -178,6 +179,7 @@ impl Sexp {
     /// # Safety
     /// Don't capture `Gc` value in the closure, which will escape from the gc management.
     /// Don't recurse in f's body.
+    /// Quote the ret-value if it might be a list and this function is not a macro.
     pub unsafe fn rust_fn_with_preprocess(
         f: impl FnMut(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static,
         p: impl Fn(Ptr<Sexp>, &mut Env) -> Ptr<Sexp> + 'static,

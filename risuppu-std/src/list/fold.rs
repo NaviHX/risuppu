@@ -3,6 +3,8 @@ use risuppu::{
     sexp::{Ptr, Sexp},
 };
 
+use super::quote;
+
 pub fn fold(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let (lambda, init, lists) = (args.car(), args.cdr().car(), args.cdr().cdr());
     let lambda = env.evaluate(lambda);
@@ -13,14 +15,14 @@ pub fn fold(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
         match list.as_ref() {
             Sexp::Form(_) => {
                 for elem in Sexp::iter(list) {
-                    init = env.evaluate(Sexp::from_vec([lambda.clone(), init, elem]));
+                    init = env.evaluate(Sexp::from_vec([lambda.clone(), quote(init), elem]));
                 }
             }
-            _ => init = env.evaluate(Sexp::from_vec([lambda.clone(), init, list])),
+            _ => init = env.evaluate(Sexp::from_vec([lambda.clone(), quote(init), list])),
         }
     }
 
-    init
+    quote(init)
 }
 
 #[cfg(test)]

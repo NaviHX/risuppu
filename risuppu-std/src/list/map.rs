@@ -3,16 +3,18 @@ use risuppu::{
     sexp::{Ptr, Sexp},
 };
 
+use super::quote;
+
 pub fn map(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let (list, lambda) = (args.car(), args.cdr().car());
     let list = env.evaluate(list);
     let lambda = env.evaluate(lambda);
 
-    Sexp::from_vec(
+    quote(Sexp::from_vec(
         Sexp::iter(list)
             .map(|elem| env.evaluate(Sexp::from_vec([lambda.clone(), elem])))
             .collect::<Vec<_>>(),
-    )
+    ))
 }
 
 #[cfg(test)]
