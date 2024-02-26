@@ -46,6 +46,10 @@ pub fn pre_function(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     Sexp::from_vec(args)
 }
 
+pub fn id(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
+    args
+}
+
 #[cfg(test)]
 mod test {
     use risuppu::{sexp::{parse::parse_sexp, Sexp}, semantic::Env};
