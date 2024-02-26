@@ -1,4 +1,13 @@
+(define even? (lambda (n)
+                (eq (mod n 2) 0)))
+
+(define odd? (lambda (n)
+               (eq (mod n 2) 1)))
+
 (provide + __builtin_+)
 (provide - __builtin_-)
 (provide * __builtin_*)
 (provide / __builtin_/)
+(provide mod __builtin_mod)
+(provide even? even?)
+(provide odd? odd?)
