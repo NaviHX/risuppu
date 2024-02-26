@@ -7,6 +7,8 @@ pub mod arithmetic;
 pub mod string;
 #[cfg(feature = "bool")]
 pub mod bool;
+#[cfg(feature = "list")]
+pub mod list;
 
 pub use paste::paste;
 
