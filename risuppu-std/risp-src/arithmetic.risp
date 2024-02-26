@@ -20,3 +20,7 @@
 (provide less-eq? __builtin_le)
 (provide >= __builtin_ge)
 (provide <= __builtin_le)
+
+(define quotient/remainder (lambda (m n) (list (/ m n) (mod m n))))
+(provide quotient/remainder quotient/remainder)
+(provide q/r quotient/remainder)

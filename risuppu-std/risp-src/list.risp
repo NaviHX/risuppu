@@ -46,5 +46,7 @@
 (provide filter filter)
 (provide rev rev)
 (provide find find)
+(provide nth nth)
 (provide position position)
 (provide count count)
+(provide len count)
