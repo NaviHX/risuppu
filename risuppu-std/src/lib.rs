@@ -13,12 +13,10 @@ pub use paste::paste;
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! std_library {
-    ($mod_name:ident, $(($function_name:ident, $($r:tt)*)),*) => {
-        $(mod $function_name;)*
-
+    ($mod_name:ident, $(($function:expr, $($r:tt)*)),*) => {
         $crate::paste! {
             pub fn [<load_ $mod_name>](env: &mut risuppu::semantic::Env) {
-                $($crate::load_fn!(env, $function_name, $($r)*));*
+                $($crate::load_fn!(env, $function, $($r)*));*
             }
         }
     }
@@ -26,17 +24,17 @@ macro_rules! std_library {
 
 #[macro_export]
 macro_rules! load_fn {
-    ($env:ident, $function_name:ident, $rt_name:literal, $pre_function:ident) => {
+    ($env:ident, $function:expr, $rt_name:literal, $pre_function:expr) => {
         $env.set_global($rt_name, unsafe {
             risuppu::sexp::Sexp::rust_fn_with_preprocess(
-                $function_name::$function_name,
+                $function,
                 $pre_function,
             )
         })
     };
-    ($env:ident, $function_name:ident, $rt_name:literal) => {
+    ($env:ident, $function:expr, $rt_name:literal) => {
         $env.set_global($rt_name, unsafe {
-            risuppu::sexp::Sexp::rust_fn($function_name::$function_name)
+            risuppu::sexp::Sexp::rust_fn($function)
         })
     };
 }

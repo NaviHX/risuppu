@@ -1,11 +1,16 @@
 use crate::pre_function;
 
+mod plus;
+mod minus;
+mod multiply;
+mod divide;
+
 super::std_library!(
     arithmetic,
-    (plus, "+", pre_function),
-    (minus, "-", pre_function),
-    (multiply, "*", pre_function),
-    (divide, "/", pre_function)
+    (plus::plus, "+", pre_function),
+    (minus::minus, "-", pre_function),
+    (multiply::multiply, "*", pre_function),
+    (divide::divide, "/", pre_function)
 );
 
 #[cfg(test)]
