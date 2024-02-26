@@ -16,8 +16,8 @@ super::std_library!(
     (modular::modular, "__builtin_mod", pre_function),
     (comp::less, "__builtin_less", pre_function),
     (comp::greater, "__builtin_greater", pre_function),
-    (comp::le, "__builtin_less-eq", pre_function),
-    (comp::ge, "__builtin_greater-eq", pre_function)
+    (comp::le, "__builtin_le", pre_function),
+    (comp::ge, "__builtin_ge", pre_function)
 );
 
 #[cfg(test)]

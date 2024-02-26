@@ -25,6 +25,13 @@
                       ((eq n 0) (car lst))
                       (else (nth* (- n 1)))))))
 
+;; Import arithmetic module
+(define position (lambda (predicate lst)
+                   (let loop ((remaining lst)
+                              (pos 0))
+                     (if (predicate (car remaining)) pos
+                       (loop (cdr remaining) (+ pos 1))))))
+
 (provide list __builtin_list)
 (provide fold __builtin_fold)
 (provide map __builtin_map)
@@ -32,3 +39,4 @@
 (provide filter filter)
 (provide rev rev)
 (provide find find)
+(provide position position)
