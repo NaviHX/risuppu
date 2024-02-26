@@ -15,11 +15,11 @@ mod test {
         let mut env = Env::new();
         load_bool(&mut env);
 
-        let expr = parse_sexp("(or (or #f #f) #t #f)").unwrap().1;
+        let expr = parse_sexp("(__builtin_or (__builtin_or #f #f) #t #f)").unwrap().1;
         let eval = env.evaluate(expr);
         assert_eq!(eval, Sexp::bool(true));
 
-        let expr = parse_sexp("(or (or #f #f) #f #f)").unwrap().1;
+        let expr = parse_sexp("(__builtin_or (__builtin_or #f #f) #f #f)").unwrap().1;
         let eval = env.evaluate(expr);
         assert_eq!(eval, Sexp::bool(false));
     }

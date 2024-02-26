@@ -29,7 +29,7 @@ mod test {
         load_list(&mut env);
         load_arithmetic(&mut env);
 
-        let expr = parse_sexp("(map '(1 2 3) (lambda (a) (* a 2)))")
+        let expr = parse_sexp("(__builtin_map '(1 2 3) (lambda (a) (__builtin_* a 2)))")
             .unwrap()
             .1;
         let res = env.evaluate(expr);

@@ -1,0 +1,13 @@
+(define filter (lambda (predicate lst)
+                 (flat-map
+                   lst
+                   (lambda (elem)
+                     (if (predicate elem)
+                       (list elem)
+                       '())))))
+
+(provide list __builtin_list)
+(provide fold __builtin_fold)
+(provide map __builtin_map)
+(provide flat-map __builtin_flat-map)
+(provide filter filter)

@@ -29,7 +29,7 @@ mod test {
         load_list(&mut env);
         load_arithmetic(&mut env);
 
-        let expr = parse_sexp("(flat-map '(1 2 3) (lambda (a) (list a (* a 2) (* a 3))))")
+        let expr = parse_sexp("(__builtin_flat-map '(1 2 3) (lambda (a) (__builtin_list a (__builtin_* a 2) (__builtin_* a 3))))")
             .unwrap()
             .1;
         let res = env.evaluate(expr);
@@ -43,7 +43,7 @@ mod test {
         load_list(&mut env);
         load_arithmetic(&mut env);
 
-        let expr = parse_sexp("(flat-map '(1 2 3) (lambda (a) (if (eq a 2) (list a) '())))")
+        let expr = parse_sexp("(__builtin_flat-map '(1 2 3) (lambda (a) (if (eq a 2) (__builtin_list a) '())))")
             .unwrap()
             .1;
         let res = env.evaluate(expr);

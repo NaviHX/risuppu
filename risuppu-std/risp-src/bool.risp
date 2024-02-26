@@ -1,0 +1,3 @@
+(provide and __builtin_and)
+(provide or __builtin_or)
+(provide not __builtin_not)

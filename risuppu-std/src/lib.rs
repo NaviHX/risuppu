@@ -58,7 +58,7 @@ mod test {
 
     #[test]
     fn omega() {
-        let sum = parse_sexp("(lambda (s p n) (if (eq n 0) p (s s (+ p n) (- n 1))))").unwrap().1;
+        let sum = parse_sexp("(lambda (s p n) (if (eq n 0) p (s s (__builtin_+ p n) (__builtin_- n 1))))").unwrap().1;
         let omega = parse_sexp("(lambda (f) (f f))").unwrap().1;
         let mut env = Env::new();
         load_arithmetic(&mut env);
@@ -71,7 +71,7 @@ mod test {
 
     #[test]
     fn y() {
-        let sum = parse_sexp("(lambda (s p n) (if (eq n 0) p (s (+ p n) (- n 1))))").unwrap().1;
+        let sum = parse_sexp("(lambda (s p n) (if (eq n 0) p (s (__builtin_+ p n) (__builtin_- n 1))))").unwrap().1;
         let omega = parse_sexp("(lambda (f) (f f))").unwrap().1;
         let y = parse_sexp("(lambda (f) (omega (lambda (g) (lambda (a1 a2) (f (g g) a1 a2)))))").unwrap().1;
         let mut env = Env::new();

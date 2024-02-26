@@ -6,7 +6,7 @@ mod not;
 
 crate::std_library!(
     bool,
-    (and::and, "and", pre_function),
-    (or::or, "or", pre_function),
-    (not::not, "not", pre_function)
+    (and::and, "__builtin_and", pre_function),
+    (or::or, "__builtin_or", pre_function),
+    (not::not, "__builtin_not", pre_function)
 );

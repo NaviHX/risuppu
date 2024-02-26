@@ -39,7 +39,7 @@ mod test {
     fn concat_list() {
         let mut env = Env::new();
         load_string(&mut env);
-        let expr = "(concat (car '(\"1\" \"3\")) \"2\" (car (cdr '(\"1\" \"3\"))))";
+        let expr = "(__builtin_concat (car '(\"1\" \"3\")) \"2\" (car (cdr '(\"1\" \"3\"))))";
         let expr = risuppu::sexp::parse::parse_sexp(expr).unwrap().1;
         let concated = env.evaluate(expr);
         assert_eq!(concated, Sexp::string("123"));
@@ -49,7 +49,7 @@ mod test {
     fn embedded_concat() {
         let mut env = Env::new();
         load_string(&mut env);
-        let expr = parse_sexp("(concat (concat 1 2) 3)").unwrap().1;
+        let expr = parse_sexp("(__builtin_concat (__builtin_concat 1 2) 3)").unwrap().1;
         let eval = env.evaluate(expr);
         assert_eq!(eval, Sexp::string("123"));
     }

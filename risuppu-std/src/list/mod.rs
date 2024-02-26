@@ -11,10 +11,10 @@ mod map;
 
 crate::std_library!(
     list,
-    (create_list, "list", crate::pre_function),
-    (id, "fold", fold::fold),
-    (id, "map", map::map),
-    (id, "flat-map", flat_map::flat_map)
+    (create_list, "__builtin_list", crate::pre_function),
+    (id, "__builtin_fold", fold::fold),
+    (id, "__builtin_map", map::map),
+    (id, "__builtin_flat-map", flat_map::flat_map)
 );
 
 pub fn quote(args: Ptr<Sexp>) -> Ptr<Sexp> {

@@ -7,10 +7,10 @@ mod divide;
 
 super::std_library!(
     arithmetic,
-    (plus::plus, "+", pre_function),
-    (minus::minus, "-", pre_function),
-    (multiply::multiply, "*", pre_function),
-    (divide::divide, "/", pre_function)
+    (plus::plus, "__builtin_+", pre_function),
+    (minus::minus, "__builtin_-", pre_function),
+    (multiply::multiply, "__builtin_*", pre_function),
+    (divide::divide, "__builtin_/", pre_function)
 );
 
 #[cfg(test)]
@@ -23,7 +23,7 @@ mod test {
         super::load_arithmetic(&mut env);
 
         env.evaluate(
-            parse_sexp("(define fact (lambda (n) (if (eq n 1) 1 (* n (fact (- n 1))))))")
+            parse_sexp("(define fact (lambda (n) (if (eq n 1) 1 (__builtin_* n (fact (__builtin_- n 1))))))")
                 .unwrap()
                 .1,
         );
@@ -48,7 +48,7 @@ mod test {
         super::load_arithmetic(&mut env);
 
         let res = env.evaluate(
-            parse_sexp("(+ 1 (+ 2 3))")
+            parse_sexp("(__builtin_+ 1 (__builtin_+ 2 3))")
                 .unwrap()
                 .1,
         );

@@ -140,7 +140,7 @@ mod test {
         load_base(&mut env);
         load_arithmetic(&mut env);
         let expr = risuppu::sexp::parse::parse_sexp(
-            "(let loop ((n 5)) (+ n (if (eq n 1) 0 (loop (- n 1)))))",
+            "(let loop ((n 5)) (__builtin_+ n (if (eq n 1) 0 (loop (__builtin_- n 1)))))",
         )
         .unwrap()
         .1;

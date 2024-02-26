@@ -15,11 +15,11 @@ mod test {
         let mut env = Env::new();
         load_bool(&mut env);
 
-        let expr = parse_sexp("(and (and #t #t) #t #f)").unwrap().1;
+        let expr = parse_sexp("(__builtin_and (__builtin_and #t #t) #t #f)").unwrap().1;
         let eval = env.evaluate(expr);
         assert_eq!(eval, Sexp::bool(false));
 
-        let expr = parse_sexp("(and (and #t #t) #t #t)").unwrap().1;
+        let expr = parse_sexp("(__builtin_and (__builtin_and #t #t) #t #t)").unwrap().1;
         let eval = env.evaluate(expr);
         assert_eq!(eval, Sexp::bool(true));
     }
