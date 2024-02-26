@@ -6,8 +6,29 @@
                        (list elem)
                        '())))))
 
+(define rev (lambda (lst)
+              (fold
+                (lambda (sum elem) (cons elem sum))
+                '()
+                lst)))
+
+(define find (lambda (predicate lst)
+               (let loop ((remaining lst))
+                 (if (predicate (car remaining))
+                   remaining
+                   (loop (cdr remaining))))))
+
+;; Must import arithmetic module
+(define nth (lambda (lst n)
+              (let nth* ((remaining lst) (n n))
+                (cond ((< n 0) '())
+                      ((eq n 0) (car lst))
+                      (else (nth* (- n 1)))))))
+
 (provide list __builtin_list)
 (provide fold __builtin_fold)
 (provide map __builtin_map)
 (provide flat-map __builtin_flat-map)
 (provide filter filter)
+(provide rev rev)
+(provide find find)

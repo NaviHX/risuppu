@@ -11,3 +11,12 @@
 (provide mod __builtin_mod)
 (provide even? even?)
 (provide odd? odd?)
+
+(provide greater? __builtin_greater)
+(provide less? __builtin_less)
+(provide > __builtin_greater)
+(provide < __builtin_less)
+(provide greater-eq? __builtin_ge)
+(provide less-eq? __builtin_le)
+(provide >= __builtin_ge)
+(provide <= __builtin_le)
