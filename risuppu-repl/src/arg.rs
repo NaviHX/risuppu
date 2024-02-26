@@ -5,7 +5,7 @@ use clap::Parser;
 #[derive(Parser)]
 pub struct Arg {
     /// Input files
-    #[arg(short, long)]
+    #[arg()]
     pub files: Vec<PathBuf>,
 
     /// Non-interaction mode
