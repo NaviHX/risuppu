@@ -186,10 +186,20 @@ pub fn process_cons(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 
 pub fn process_define(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let identity = body.car();
-    let defination = env.evaluate(body.cdr().car());
 
     if let Sexp::Identifier(ident) = identity.as_ref() {
+        let defination = env.evaluate(body.cdr().car());
         env.set_global(ident, defination)
+    }
+
+    if let Sexp::Form(_) = identity.as_ref() {
+        let ident = identity.car();
+        let params = identity.cdr();
+        let defination = body.cdr().car();
+
+        if !ident.is_nil() {
+            env.set_global(ident, Sexp::from_vec([Sexp::lambda(), params, defination]));
+        }
     }
 
     Ptr::new(Sexp::Nil)
@@ -442,6 +452,14 @@ mod test {
         env.evaluate(parse_sexp("(define f1 (f 1))").unwrap().1);
         env.evaluate(parse_sexp("(f 2)").unwrap().1);
         let res = env.evaluate(parse_sexp("(f1 1)").unwrap().1);
+        assert_eq!(res, Sexp::int(1));
+    }
+
+    #[test]
+    fn define_shorthand() {
+        let mut env = Env::new();
+        env.evaluate(parse_sexp("(define (f a b) a)").unwrap().1);
+        let res = env.evaluate(parse_sexp("(f 1 2)").unwrap().1);
         assert_eq!(res, Sexp::int(1));
     }
 }
