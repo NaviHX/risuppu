@@ -190,6 +190,18 @@ impl Sexp {
     pub fn iter(list: Ptr<Sexp>) -> SexpListIter {
         SexpListIter::new(list)
     }
+
+    pub fn is_quoted(&self) -> bool {
+        matches!(self.car().as_ref(), Self::Quote)
+    }
+
+    pub fn get_quoted(&self) -> Option<Ptr<Sexp>> {
+        if self.is_quoted() {
+            Some(self.cdr().car())
+        } else {
+            None
+        }
+    }
 }
 
 impl Display for Sexp {
@@ -253,6 +265,7 @@ impl Display for Cons {
 #[cfg(test)]
 mod test {
     use crate::sexp::{Sexp, Cons};
+    use super::parse::parse_sexp;
 
     #[test]
     fn nil_is_nil() {
@@ -262,5 +275,29 @@ mod test {
     #[test]
     fn nil_form_is_nil() {
         assert!(Sexp::Form(Cons { car: Sexp::nil(), cdr: Sexp::nil() }).is_nil())
+    }
+
+    #[test]
+    fn check_quoted() {
+        let expr = parse_sexp("(1 2 3)").unwrap().1;
+        assert!(!expr.is_quoted());
+        let expr = parse_sexp("'(1 2 3)").unwrap().1;
+        assert!(expr.is_quoted());
+    }
+
+    #[test]
+    fn get_quoted() {
+        let expr = parse_sexp("'(1 2 3)").unwrap().1;
+        assert!(expr.is_quoted());
+        let expected = parse_sexp("(1 2 3)").unwrap().1;
+        assert_eq!(expr.get_quoted(), Some(expected));
+    }
+
+    #[test]
+    fn get_quoted_atom() {
+        let expr = parse_sexp("'a").unwrap().1;
+        assert!(expr.is_quoted());
+        let expected = parse_sexp("a").unwrap().1;
+        assert_eq!(expr.get_quoted(), Some(expected));
     }
 }
