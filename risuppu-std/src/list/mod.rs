@@ -21,10 +21,6 @@ pub fn quote(args: Ptr<Sexp>) -> Ptr<Sexp> {
     Sexp::from_vec([Sexp::quote(), args])
 }
 
-pub fn create_list(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
-    quote(Sexp::from_vec(
-        Sexp::iter(args)
-            .map(|arg| env.evaluate(arg))
-            .collect::<Vec<_>>(),
-    ))
+pub fn create_list(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
+    quote(Sexp::from_vec(Sexp::iter(args).collect::<Vec<_>>()))
 }
