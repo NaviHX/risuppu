@@ -58,7 +58,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                     }
                     Sexp::Macro => break sexp.clone(),
                     Sexp::CapturedLambda(_) => break sexp.clone(),
-                    Sexp::Eval => evaluate(cdr, env),
+                    Sexp::Eval => evaluate(cdr.car(), env),
                     Sexp::Define => process_define(cdr, env),
                     Sexp::Require => process_require(cdr, env),
                     Sexp::Provide => process_provide(cdr, env),
