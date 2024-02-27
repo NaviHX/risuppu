@@ -39,13 +39,12 @@ fn list(input: &str) -> IResult<&str, Ptr<Sexp>> {
 }
 
 fn object(input: &str) -> IResult<&str, Ptr<Sexp>> {
-    let right_paren1 = map(tag(")"), |_| ());
-    let right_paren2 = map(tag(")"), |_| ());
+    let right_paren = map(tag(")"), |_| ());
 
     alt((
-        wrap_seperator!(delimited(tag("("), list, right_paren1)),
-        wrap_seperator!(map(delimited(tag("'("), list, right_paren2), |list| {
-            Sexp::cons(Sexp::wrap(Sexp::Quote), Sexp::cons(list, Sexp::nil()))
+        wrap_seperator!(delimited(tag("("), list, right_paren)),
+        wrap_seperator!(map(preceded(tag("'"), object), |obj| {
+            Sexp::from_vec([Sexp::quote(), obj])
         })),
         atom,
     ))(input)
@@ -252,6 +251,27 @@ mod test {
     fn parse_line_comment() {
         let expr = parse_sexp(";; This is comment\n(test test)").unwrap().1;
         let expected = Sexp::from_vec([Sexp::identifier("test"), Sexp::identifier("test")]);
+        assert_eq!(expr, expected);
+    }
+
+    #[test]
+    fn parse_quoted_nil_list() {
+        let expr = parse_sexp("'()").unwrap().1;
+        let expected = Sexp::from_vec([Sexp::quote(), Sexp::nil()]);
+        assert_eq!(expr, expected);
+    }
+
+    #[test]
+    fn parse_quoted_list() {
+        let expr = parse_sexp("'(1 2)").unwrap().1;
+        let expected = Sexp::from_vec([Sexp::quote(), Sexp::from_vec([Sexp::int(1), Sexp::int(2)])]);
+        assert_eq!(expr, expected);
+    }
+
+    #[test]
+    fn parse_quoted_atom() {
+        let expr = parse_sexp("'1").unwrap().1;
+        let expected = Sexp::from_vec([Sexp::quote(), Sexp::int(1)]);
         assert_eq!(expr, expected);
     }
 }
