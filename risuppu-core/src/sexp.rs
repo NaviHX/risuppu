@@ -202,6 +202,10 @@ impl Sexp {
             None
         }
     }
+
+    pub fn is_identifier(&self) -> bool {
+        matches!(self, Self::Identifier(_))
+    }
 }
 
 impl Display for Sexp {
