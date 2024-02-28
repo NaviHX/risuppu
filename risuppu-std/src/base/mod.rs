@@ -6,6 +6,7 @@ mod r#do;
 mod and_then;
 mod r#let;
 mod cond;
+mod r#match;
 
 super::std_library!(
     base,
@@ -13,5 +14,6 @@ super::std_library!(
     (r#do::r#do, "do"),
     (and_then::and_then, "and-then", eval_cond),
     (r#let::r#let, "let"),
-    (cond::cond, "cond")
+    (cond::cond, "cond"),
+    (r#match::r#match, "match")
 );
