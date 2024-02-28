@@ -1,6 +1,7 @@
 pub mod iter;
 pub mod parse;
 pub mod rustfn;
+pub mod pattern;
 use gc::{Finalize, Gc, GcCell, Trace};
 use std::fmt::Display;
 
