@@ -3,7 +3,7 @@ use risuppu::{
     sexp::{pattern::Pattern, Ptr, Sexp},
 };
 
-pub fn r#match(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+pub fn r#match(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     let arg = args.car();
     let arms = args.cdr();
     let else_flag = Sexp::identifier("else");
