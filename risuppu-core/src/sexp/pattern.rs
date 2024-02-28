@@ -134,7 +134,12 @@ impl Pattern {
                     bindings.extend_binding(b);
                 }
 
-                Ok(bindings)
+                let remaining = expr_iter.next();
+                if let Some(remaining) = remaining {
+                    Err(MatchError { expected: Pattern::Nil, existed: remaining })
+                } else {
+                    Ok(bindings)
+                }
             }
             (Pattern::List(_), _) => Err(MatchError::new(self.clone(), expr)),
             (Pattern::Nil, Sexp::Nil | Sexp::Form(_)) => {
@@ -242,6 +247,13 @@ mod test {
     fn match_identifier_failure() {
         let pattern: Pattern = parse_sexp("'->").unwrap().1.into();
         let expr = parse_sexp("'->").unwrap().1;
+        assert!(!pattern.matches(expr))
+    }
+
+    #[test]
+    fn exhausted_match() {
+        let pattern: Pattern = parse_sexp("(a)").unwrap().1.into();
+        let expr = parse_sexp("(1 2)").unwrap().1;
         assert!(!pattern.matches(expr))
     }
 }
