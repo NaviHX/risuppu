@@ -11,6 +11,20 @@ macro_rules! sexp {
 
 #[macro_export]
 macro_rules! form {
+    (#[$car:tt], $($cdr:tt)*) => {
+        {
+            let cdr = $crate::form!($($cdr)*);
+            $crate::sexp::Sexp::cons($crate::sexp!(#[$car]), cdr)
+        }
+    };
+
+    (#[$car:tt]) => {
+        {
+            let nil = $crate::sexp::Sexp::nil();
+            $crate::sexp::Sexp::cons($crate::sexp!(#[$car]), nil)
+        }
+    };
+
     ($car:tt, $($cdr:tt)*) => {
         {
             let cdr = $crate::form!($($cdr)*);
@@ -96,8 +110,8 @@ macro_rules! atom {
         $crate::sexp::Sexp::nil()
     };
 
-    ([[$v:expr]]) => {
-        $crate::sexp::Sexp::identifier($v)
+    (#[$($v:tt)*]) => {
+        $crate::sexp::Sexp::identifier($($v)*)
     };
 
     ($v:expr) => {
@@ -111,10 +125,10 @@ mod test {
 
     #[test]
     fn ident_atom() {
-        let ident = crate::atom!([["ident"]]);
+        let ident = crate::atom!(#["ident"]);
         assert_eq!(ident, Sexp::identifier("ident"));
 
-        let ident = crate::sexp!([["ident"]]);
+        let ident = crate::sexp!(#["ident"]);
         assert_eq!(ident, Sexp::identifier("ident"));
     }
 
@@ -157,10 +171,10 @@ mod test {
     fn list_many() {
         let expected = Sexp::from_vec([Sexp::define(), Sexp::identifier("a"), Sexp::int(1)]);
 
-        let expr = crate::form!(define, [["a"]], 1);
+        let expr = crate::form!(define, #["a"], 1);
         assert_eq!(expr, expected);
 
-        let expr = crate::sexp!((define, [["a"]], 1));
+        let expr = crate::sexp!((define, #["a"], 1));
         assert_eq!(expr, expected);
     }
 
@@ -168,6 +182,13 @@ mod test {
     fn list_embedded() {
         let expected = crate::sexp::parse::parse_sexp("((1 2) 3)").unwrap().1;
         let expr = crate::sexp!(((1, 2), 3));
+        assert_eq!(expected, expr);
+    }
+
+    #[test]
+    fn list_identifier() {
+        let expected = crate::sexp::parse::parse_sexp("(ident)").unwrap().1;
+        let expr = crate::sexp!((#["ident"]));
         assert_eq!(expected, expr);
     }
 }
