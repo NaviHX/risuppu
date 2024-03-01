@@ -1,0 +1,32 @@
+;; ω := λf . f f
+(define (omega f) (f f))
+(provide omega omega)
+(provide ω omega)
+
+;; Require std/list.
+;; Don't override ω's definition.
+;; Y := λf . ω (λg . f (g g))
+(define Y (macro (prototype body)
+                 (let ((name (car prototype))
+                       (params (cdr prototype)))
+                   (let ((func (list
+                                 ;; The real lambda which may recursively call itself as the first param.
+                                 ;; (lambda (function-name params...) ...)
+                                 'lambda
+                                 (cons name params)
+                                 body))
+                         (Y* (list
+                               ;; (lambda (f) ...)
+                               'lambda
+                               (list 'f)
+                               ;; (omega (lambda (g) (lambda (params...) ((f (g g) params...)))))
+                               (list 'ω (list 'lambda (list 'g)
+                                              (list 'lambda params (cons (list 'f (list 'g 'g)) params)))))))
+                     (list Y* func)))))
+(provide Y Y)
+
+;; Apply a list to the function
+(define apply (macro (f args) (cons f args)))
+(provide apply apply)
+(provide @ aplly)
+
