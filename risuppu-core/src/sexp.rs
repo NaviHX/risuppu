@@ -1,7 +1,8 @@
+pub mod macros;
 pub mod iter;
 pub mod parse;
-pub mod rustfn;
 pub mod pattern;
+pub mod rustfn;
 use gc::{Finalize, Gc, GcCell, Trace};
 use std::fmt::Display;
 
@@ -105,7 +106,8 @@ impl Sexp {
     }
 
     pub fn is_nil(&self) -> bool {
-        matches!(self, Self::Nil) || (matches!(self, Self::Form(_)) && self.car().is_nil() && self.cdr().is_nil())
+        matches!(self, Self::Nil)
+            || (matches!(self, Self::Form(_)) && self.car().is_nil() && self.cdr().is_nil())
     }
 
     pub fn is_lambda(&self) -> bool {
@@ -242,6 +244,30 @@ impl Display for Sexp {
     }
 }
 
+impl From<i32> for Sexp {
+    fn from(value: i32) -> Self {
+        Self::I32(value)
+    }
+}
+
+impl From<String> for Sexp {
+    fn from(value: String) -> Self {
+        Self::SString(value)
+    }
+}
+
+impl From<bool> for Sexp {
+    fn from(value: bool) -> Self {
+        Self::Bool(value)
+    }
+}
+
+impl From<char> for Sexp {
+    fn from(value: char) -> Self {
+        Self::Char(value)
+    }
+}
+
 impl Display for Cons {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match (self.car.as_ref(), self.cdr.as_ref()) {
@@ -269,8 +295,8 @@ impl Display for Cons {
 
 #[cfg(test)]
 mod test {
-    use crate::sexp::{Sexp, Cons};
     use super::parse::parse_sexp;
+    use crate::sexp::{Cons, Sexp};
 
     #[test]
     fn nil_is_nil() {
@@ -279,7 +305,11 @@ mod test {
 
     #[test]
     fn nil_form_is_nil() {
-        assert!(Sexp::Form(Cons { car: Sexp::nil(), cdr: Sexp::nil() }).is_nil())
+        assert!(Sexp::Form(Cons {
+            car: Sexp::nil(),
+            cdr: Sexp::nil()
+        })
+        .is_nil())
     }
 
     #[test]
