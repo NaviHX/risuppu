@@ -26,7 +26,7 @@ impl Frame {
     }
 
     pub fn pop(cur: MutPtr<Self>) -> Option<MutPtr<Self>> {
-        cur.borrow_mut().pre.clone()
+        cur.borrow().pre.clone()
     }
 
     pub fn modify(frame_ptr: MutPtr<Self>, mut f: impl FnMut(&mut InnerFrame)) -> MutPtr<Self> {
