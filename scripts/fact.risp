@@ -1,4 +1,5 @@
 (require std/arithmetic)
+(require std/list)
 (require std/function)
 
 (define (fact n)
@@ -10,4 +11,4 @@
 (do
   (-> (print "Fact 10 = "))
   (-> (print (fact 10)))
-  (-> (print ("\n"))))
+  (-> (print "\n")))
