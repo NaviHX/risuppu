@@ -1,12 +1,13 @@
 (require std/string)
 (require std/arithmetic)
+(require std/list)
 
 (let ((greeting "Hello, what's your name?\n")
       (greeting-with-name '("Nice to meet you, " ".\n")))
   (do
     (-> (print greeting))
     (-> (read) (name))
-    (-> (print (concat (car greeting-with-name) name (car (cdr greeting-with-name)))))
+    (-> (print (concat (nth greeting-with-name 0) name (nth greeting-with-name 1))))
     name))
 
 (let ((fact (lambda (n)

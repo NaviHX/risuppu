@@ -22,8 +22,8 @@
 (define nth (lambda (lst n)
               (let nth* ((remaining lst) (n n))
                 (cond ((< n 0) '())
-                      ((eq n 0) (car lst))
-                      (else (nth* (- n 1)))))))
+                      ((eq n 0) (car remaining))
+                      (else (nth* (cdr remaining) (- n 1)))))))
 
 ;; Import arithmetic module
 (define position (lambda (predicate lst)
