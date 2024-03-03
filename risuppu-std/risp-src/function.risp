@@ -28,5 +28,5 @@
 ;; Apply a list to the function
 (define apply (macro (f args) (cons f args)))
 (provide apply apply)
-(provide @ aplly)
+(provide @ apply)
 
