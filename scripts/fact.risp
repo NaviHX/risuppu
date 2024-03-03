@@ -1,0 +1,13 @@
+(require std/arithmetic)
+(require std/function)
+
+(define (fact n)
+  (let ((fact* (Y (fact* num product)
+                 (if (eq num 1) product
+                   (fact* (- num 1) (* product num))))))
+    (fact* n 1)))
+
+(do
+  (-> (print "Fact 10 = "))
+  (-> (print (fact 10)))
+  (-> (print ("\n"))))
