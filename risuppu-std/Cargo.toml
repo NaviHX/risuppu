@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-risuppu = { path = "../risuppu-core/" }
+risuppu = { path = "../risuppu-core/", package = "risuppu-core" }
 paste = { version = "1" }
 
 [features]

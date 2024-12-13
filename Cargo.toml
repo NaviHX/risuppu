@@ -1,3 +1,12 @@
+[package]
+name = "risuppu"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risuppu-core = { path = "./risuppu-core" }
+risuppu-std = { path = "./risuppu-std" }
+
 [workspace]
 members = [
     "risuppu-core",
