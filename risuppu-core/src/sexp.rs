@@ -107,7 +107,6 @@ impl Sexp {
 
     pub fn is_nil(&self) -> bool {
         matches!(self, Self::Nil)
-            || (matches!(self, Self::Form(_)) && self.car().is_nil() && self.cdr().is_nil())
     }
 
     pub fn is_lambda(&self) -> bool {

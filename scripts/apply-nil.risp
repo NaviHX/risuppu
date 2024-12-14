@@ -1,0 +1,17 @@
+(require std/arithmetic)
+(require std/list)
+(require std/function)
+
+(define nil '())
+
+(define (p3 a b c)
+  (do
+    (-> (print a))
+    (-> (print b))
+    (-> (print c))
+    (-> (print "\n"))))
+
+(p3 1 2 3)
+(p3 nil 2 3)
+(p3 1 nil 3)
+(p3 1 2 nil)
