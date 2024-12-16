@@ -56,7 +56,8 @@ pub fn process_require(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     };
     for (k, v) in required_env.get_provided().into_iter() {
         let import_ident = Sexp::identifier(format!("{prefix}{k}"));
-        env.set_global(import_ident, v);
+        env.set_global(import_ident.clone(), v.clone());
+        env.add_provided(import_ident, v);
     }
 
     Sexp::nil()
