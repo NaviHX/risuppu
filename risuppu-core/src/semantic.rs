@@ -91,7 +91,7 @@ pub fn evaluate(mut sexp: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
                                 apply_list_to(args, car, env)
                             }
                             // Evaluate the expanded expr.
-                            Sexp::Macro => apply_list_to(cdr, car, env),
+                            Sexp::Macro => evaluate(apply_list_to(cdr, car, env), env),
                             _ => {
                                 let new_car = env.evaluate(car.clone());
                                 Sexp::cons(new_car, cdr)
