@@ -303,8 +303,8 @@ mod test {
     }
 
     #[test]
-    fn nil_form_is_nil() {
-        assert!(Sexp::Form(Cons {
+    fn nil_form_is_not_nil() {
+        assert!(!Sexp::Form(Cons {
             car: Sexp::nil(),
             cdr: Sexp::nil()
         })

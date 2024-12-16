@@ -45,6 +45,7 @@ mod test {
         let expr = Ptr::new(expr);
         let mut it = Sexp::iter(expr);
 
+        assert_eq!(it.next(), Some(Sexp::nil()));
         assert_eq!(it.next(), None);
     }
 }
