@@ -15,10 +15,10 @@ pub fn fold(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
         match list.as_ref() {
             Sexp::Form(_) => {
                 for elem in Sexp::iter(list) {
-                    init = env.evaluate(Sexp::from_vec([lambda.clone(), quote(init), elem]));
+                    init = env.evaluate(Sexp::from_vec([lambda.clone(), quote(init), quote(elem)]));
                 }
             }
-            _ => init = env.evaluate(Sexp::from_vec([lambda.clone(), quote(init), list])),
+            _ => init = env.evaluate(Sexp::from_vec([lambda.clone(), quote(init), quote(list)])),
         }
     }
 
@@ -84,5 +84,17 @@ mod test {
             .1;
         let res = env.evaluate(expr);
         assert_eq!(res, Sexp::from_vec([Sexp::int(3), Sexp::int(2), Sexp::int(1)]));
+    }
+
+    #[test]
+    fn nested() {
+        let mut env = Env::new();
+        load_list(&mut env);
+
+        let expr = parse_sexp("(__builtin_fold (lambda (a b) (cons b a)) '() '((1 2) 3))")
+            .unwrap()
+            .1;
+        let res = env.evaluate(expr);
+        assert_eq!(res, parse_sexp("(3 (1 2))").unwrap().1);
     }
 }

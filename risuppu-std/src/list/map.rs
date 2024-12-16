@@ -12,7 +12,7 @@ pub fn map(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 
     quote(Sexp::from_vec(
         Sexp::iter(list)
-            .map(|elem| env.evaluate(Sexp::from_vec([lambda.clone(), elem])))
+            .map(|elem| env.evaluate(Sexp::from_vec([lambda.clone(), quote(elem)])))
             .collect::<Vec<_>>(),
     ))
 }
@@ -34,5 +34,14 @@ mod test {
             .1;
         let res = env.evaluate(expr);
         assert_eq!(res, Sexp::from_vec([Sexp::int(2), Sexp::int(4), Sexp::int(6)]));
+    }
+
+    #[test]
+    fn map_nested() {
+        let mut env = Env::new();
+        load_list(&mut env);
+        let expr = parse_sexp("(__builtin_map '((1 2)) (lambda (a) (cons 0 a)))").unwrap().1;
+        let res = env.evaluate(expr);
+        assert_eq!(res, parse_sexp("((0 1 2))").unwrap().1);
     }
 }
