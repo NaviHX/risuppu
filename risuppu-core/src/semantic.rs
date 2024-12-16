@@ -158,21 +158,16 @@ pub fn process_if(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
 
 pub fn process_eq(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
     let pre = evaluate(body.car(), env);
-    let mut remaining = body.cdr();
+    let remaining = body.cdr();
 
-    loop {
-        let car = remaining.car();
-        let car = evaluate(car, env);
-        if !car.is_nil() {
-            if car != pre {
-                break Ptr::new(Sexp::Bool(false));
-            }
-
-            remaining = remaining.cdr();
-        } else {
-            break Ptr::new(Sexp::Bool(true));
+    for item in Sexp::iter(remaining) {
+        let item = evaluate(item, env);
+        if item != pre {
+            return Sexp::bool(false);
         }
     }
+
+    Sexp::bool(true)
 }
 
 pub fn process_cons(body: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
@@ -462,5 +457,23 @@ mod test {
         env.evaluate(parse_sexp("(define (f a b) a)").unwrap().1);
         let res = env.evaluate(parse_sexp("(f 1 2)").unwrap().1);
         assert_eq!(res, Sexp::int(1));
+    }
+
+    #[test]
+    fn eq_nil() {
+        let mut env = Env::new();
+
+        let res = env.evaluate(parse_sexp("(eq 1 '())").unwrap().1);
+        assert_eq!(res, Sexp::bool(false));
+        let res = env.evaluate(parse_sexp("(eq '(1 2 3) '())").unwrap().1);
+        assert_eq!(res, Sexp::bool(false));
+    }
+
+    #[test]
+    fn nil_eq_nil() {
+        let mut env = Env::new();
+        let res = env.evaluate(parse_sexp("(eq '() '())").unwrap().1);
+        assert_eq!(Sexp::nil(), Sexp::nil());
+        assert_eq!(res, Sexp::bool(true));
     }
 }
