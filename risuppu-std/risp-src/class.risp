@@ -1,0 +1,43 @@
+(require std/list)
+
+;; class: Macro for class definition.
+;;
+;; name :: ident
+;; fields :: ( ident* )
+;; methods :: ( ident params body)
+;; params :: ( ident* )
+;; body :: sexp
+;;
+;; Expanded form:
+;; (lambda <fields> (lambda (method params)
+;;                    (let ((<field> <field>) ...)
+;;                      (match method
+;;                             ('<method-name>
+;;                              ((lambda <method-params> <method-body>)
+;;                               <params>))
+;;                             ...
+;;                             (else '())))))
+(define class (macro (fields methods)
+                     (let ((arm-folder (lambda (arms method)
+                                         (let ((method-name (car method))
+                                               (method-params (car (cdr method)))
+                                               (method-body (car (cdr (cdr method)))))
+                                           (cons
+                                             (list (list quote method-name)
+                                                   (list (list 'lambda method-params method-body) 'params))
+                                             arms)))))
+                       (let ((arms
+                               (fold arm-folder (cons (list 'else '()) '()) methods)))
+                         (list 'lambda fields
+                               (list 'lambda '(method params)
+                                     (cons 'match (cons 'method arms))))))))
+
+;; struct: A simplified version of class.
+;; You can get its field's value by simply dispatching the field's name
+(define struct (macro (fields)
+                      (let ((methods
+                              (map fields (lambda (field) (list field '() field)))))
+                        (list 'class fields methods))))
+
+(provide class class)
+(provide struct struct)
