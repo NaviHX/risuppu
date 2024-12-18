@@ -1,4 +1,5 @@
 use and_then::eval_cond;
+use r#match::pre_match;
 use crate::pre_function;
 
 mod seq;
@@ -15,5 +16,5 @@ super::std_library!(
     (and_then::and_then, "and-then", eval_cond),
     (r#let::r#let, "let"),
     (cond::cond, "cond"),
-    (r#match::r#match, "match")
+    (r#match::r#match, "match", pre_match)
 );

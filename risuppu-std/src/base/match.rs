@@ -11,10 +11,14 @@ pub fn r#match(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     for arm in Sexp::iter(arms) {
         let (pat, ret_val): (Ptr<Sexp>, Ptr<Sexp>) = (arm.car(), arm.cdr().car());
         if pat == else_flag {
+            #[cfg(debug_assertions)]
+            println!("Enter Else arm.");
             return ret_val;
         }
 
         let pat: Pattern = pat.into();
+        #[cfg(debug_assertions)]
+        println!("Match {arg:?} against {pat:?}:");
 
         if let Ok(bindings) = pat.bind(arg.clone()) {
             let (params, args): (Vec<_>, Vec<_>) = bindings
@@ -28,6 +32,12 @@ pub fn r#match(args: Ptr<Sexp>, _env: &mut Env) -> Ptr<Sexp> {
     }
 
     Sexp::nil()
+}
+
+pub fn pre_match(args: Ptr<Sexp>, env: &mut Env) -> Ptr<Sexp> {
+    let (arg, arms) = (args.car(), args.cdr());
+    let arg = env.evaluate(arg);
+    Sexp::cons(arg, arms)
 }
 
 #[cfg(test)]
