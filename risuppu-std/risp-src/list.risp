@@ -12,6 +12,27 @@
                 '()
                 lst)))
 
+;; Import bool module
+(define zip (lambda (a b)
+              (let loop ((a a)
+                         (b b)
+                         (lst '()))
+                (if (or (eq a '()) (eq b '())) (rev lst)
+                  (loop
+                    (cdr a)
+                    (cdr b)
+                    (cons (list (car a) (car b)) lst))))))
+
+(define unzip (lambda (lst)
+                (let loop ((lst lst)
+                           (a '())
+                           (b '()))
+                  (if (eq lst '()) (list (rev a) (rev b))
+                    (loop
+                      (cdr lst)
+                      (car (car lst))
+                      (car (cdr (car lst))))))))
+
 (define find (lambda (predicate lst)
                (let loop ((remaining lst))
                  (if (predicate (car remaining))
@@ -45,6 +66,8 @@
 (provide flat-map __builtin_flat-map)
 (provide filter filter)
 (provide rev rev)
+(provide zip zip)
+(provide unzip unzip)
 (provide find find)
 (provide nth nth)
 (provide position position)
