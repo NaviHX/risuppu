@@ -1,0 +1,12 @@
+(require std/list)
+
+(define tagged (macro (tag data) (list 'list (list quote tag) data)))
+(provide tagged tagged)
+
+(define (tag td) (car td))
+(define (unwrap td) (car (cdr td)))
+(define is (macro (tag td) (list 'eq (list quote tag) (list 'tag td))))
+
+(provide tag tag)
+(provide unwrap unwrap)
+(provide is is)
